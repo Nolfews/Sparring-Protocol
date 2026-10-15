@@ -1,13 +1,17 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.8",
+	"EngineAssociation": "{AFDE1443-4227-5CB4-26EB-C78A7835BBBE}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
 		{
 			"Name": "Sparring_Protocol",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"AIModule",
+				"Engine"
+			]
 		}
 	],
 	"Plugins": [

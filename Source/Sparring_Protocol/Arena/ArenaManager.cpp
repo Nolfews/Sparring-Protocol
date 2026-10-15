@@ -6,7 +6,8 @@
 #include "UObject/ConstructorHelpers.h"
 #include "EngineUtils.h"
 #include "DrawDebugHelpers.h"
-
+#include "NavigationSystem.h"
+	
 DEFINE_LOG_CATEGORY_STATIC(LogArena, Log, All);
 
 AArenaManager::AArenaManager()
@@ -68,6 +69,15 @@ void AArenaManager::RebuildGrid()
 	Grid.Initialize(Size, Rules->CellSize, Origin);
 	UpdateFloor();
 	MarkSpawnExclusionZones();
+
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	
+	
+	if (NavSys)
+	{
+		// Force le recalcul immédiat de l'ensemble du NavMesh
+		NavSys->Build();
+	}
 }
 
 void AArenaManager::UpdateFloor()
