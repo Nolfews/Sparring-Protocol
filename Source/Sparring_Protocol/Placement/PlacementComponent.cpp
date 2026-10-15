@@ -386,6 +386,7 @@ FText UPlacementComponent::GetFailReasonText(EPlacementFailReason Reason)
 	case EPlacementFailReason::NoSlotsLeft:        return FText::FromString(TEXT("No slots left"));
 	case EPlacementFailReason::BlockedByCharacter: return FText::FromString(TEXT("A character is in the way"));
 	case EPlacementFailReason::BlocksPath:         return FText::FromString(TEXT("Blocks the only path between spawns"));
+	case EPlacementFailReason::NoValidSlot:         return FText::FromString(TEXT("No valid place available"));
 	default:                                       return FText::FromString(TEXT("Cannot place here"));
 	}
 }
