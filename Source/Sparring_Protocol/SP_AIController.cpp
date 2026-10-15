@@ -7,44 +7,31 @@
 
 ASP_AIController::ASP_AIController()
 {
-    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
 }
 
-void  ASP_AIController::BeginPlay()
+void ASP_AIController::BeginPlay()
 {
     Super::BeginPlay();
-
-    /* APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-     if (PlayerPawn)
-     {
-         MoveToActor(PlayerPawn, 100.0f);
-
-         if (GEngine)
-         {
-             GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("IA : Joueur trouve, deplacement en cours !"));
-         }
-     }
-     else if (GEngine)
-     {
-         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("IA : Joueur introuvable !"));
-     }*/
 }
 
-void  ASP_AIController::Tick(float DeltaTime)
+void ASP_AIController::UpdateTargetActor()
 {
-    Super::Tick(DeltaTime);
-    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-
-    if (PlayerPawn && GetBlackboardComponent())
+    UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
+    if (!BlackboardComponent)
     {
+        return;
+    }
 
-        GetBlackboardComponent()->SetValueAsObject(FName("TargetActor"), PlayerPawn);
-
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+    UObject* CurrentTarget = BlackboardComponent->GetValueAsObject(FName("TargetActor"));
+    if (CurrentTarget != PlayerPawn)
+    {
+        BlackboardComponent->SetValueAsObject(FName("TargetActor"), PlayerPawn);
     }
 }
 
 void ASP_AIController::OnPossess(APawn* InPawn)
-
 {
     Super::OnPossess(InPawn);
 
@@ -53,4 +40,17 @@ void ASP_AIController::OnPossess(APawn* InPawn)
         RunBehaviorTree(BehaviorTreeAsset);
     }
 
+    UpdateTargetActor();
+    GetWorldTimerManager().SetTimer(
+        TargetUpdateTimerHandle,
+        this,
+        &ASP_AIController::UpdateTargetActor,
+        0.1f,
+        true);
+}
+
+void ASP_AIController::OnUnPossess()
+{
+    GetWorldTimerManager().ClearTimer(TargetUpdateTimerHandle);
+    Super::OnUnPossess();
 }
