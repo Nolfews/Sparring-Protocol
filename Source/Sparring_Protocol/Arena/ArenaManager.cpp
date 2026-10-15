@@ -1,6 +1,7 @@
 #include "Arena/ArenaManager.h"
 #include "Arena/ArenaRulesConfig.h"
 #include "Arena/ArenaSpawnPoint.h"
+#include "Arena/ArenaPathfinder.h"
 #include "Placement/PlaceableDefinition.h"
 #include "Placement/PlaceableElement.h"
 #include "Components/StaticMeshComponent.h"
@@ -9,6 +10,8 @@
 #include "UObject/ConstructorHelpers.h"
 #include "EngineUtils.h"
 #include "DrawDebugHelpers.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogArena, Log, All);
 
@@ -109,6 +112,9 @@ void AArenaManager::UpdateFloor()
 
 void AArenaManager::MarkSpawnExclusionZones()
 {
+	bHasPlayerSpawn = false;
+	bHasEnemySpawn = false;
+
 	UWorld* World = GetWorld();
 	if (!World || !Rules)
 	{
@@ -127,6 +133,19 @@ void AArenaManager::MarkSpawnExclusionZones()
 		{
 			UE_LOG(LogArena, Warning, TEXT("Spawn point %s is outside the arena grid."), *It->GetName());
 			continue;
+		}
+
+		if (It->GetSpawnOwner() == EPlacementOwner::Player)
+		{
+			bHasPlayerSpawn = true;
+			PlayerSpawnCell = SpawnCell;
+			PlayerSpawnLocation = It->GetActorLocation();
+		}
+		else
+		{
+			bHasEnemySpawn = true;
+			EnemySpawnCell = SpawnCell;
+			EnemySpawnLocation = It->GetActorLocation();
 		}
 
 		for (int32 DX = -Radius; DX <= Radius; ++DX)
@@ -252,9 +271,65 @@ EPlacementFailReason AArenaManager::ValidatePlacement(UPlaceableDefinition* Defi
 		return EPlacementFailReason::NoSlotsLeft;
 	}
 
-	// TODO (next step): path check between the two spawns -> EPlacementFailReason::BlocksPath.
+	if (IsBlockedByCharacter(Cell, Footprint))
+	{
+		return EPlacementFailReason::BlockedByCharacter;
+	}
+
+	// Last and most expensive: would this placement cut the path between the two spawns?
+	// Only ground level matters, so stacked elements skip the check.
+	if (Definition->bBlocksMovement && Cell.Z == 0 && bHasPlayerSpawn && bHasEnemySpawn)
+	{
+		TArray<FIntVector> HypotheticalBlocks;
+		HypotheticalBlocks.Reserve(Footprint.X * Footprint.Y);
+		for (int32 X = 0; X < Footprint.X; ++X)
+		{
+			for (int32 Y = 0; Y < Footprint.Y; ++Y)
+			{
+				HypotheticalBlocks.Add(FIntVector(Cell.X + X, Cell.Y + Y, 0));
+			}
+		}
+
+		if (!FArenaPathfinder::ArePathConnected(Grid, PlayerSpawnCell, EnemySpawnCell, HypotheticalBlocks))
+		{
+			return EPlacementFailReason::BlocksPath;
+		}
+	}
 
 	return EPlacementFailReason::None;
+}
+
+bool AArenaManager::IsPathOpen() const
+{
+	if (!bHasPlayerSpawn || !bHasEnemySpawn)
+	{
+		return true; // Nothing to protect without both spawns.
+	}
+	return FArenaPathfinder::ArePathConnected(Grid, PlayerSpawnCell, EnemySpawnCell, TArray<FIntVector>());
+}
+
+bool AArenaManager::IsBlockedByCharacter(const FIntVector& Cell, const FIntVector& Footprint) const
+{
+	const UWorld* World = GetWorld();
+	if (!World || !World->IsGameWorld())
+	{
+		return false;
+	}
+
+	const float CellSize = Grid.GetCellSize();
+	const FVector Center = Grid.CellToWorld(Cell) + FVector(
+		(Footprint.X - 1) * CellSize * 0.5f,
+		(Footprint.Y - 1) * CellSize * 0.5f,
+		(Footprint.Z - 1) * CellSize * 0.5f);
+	const FVector HalfExtent(Footprint.X * CellSize * 0.5f, Footprint.Y * CellSize * 0.5f, Footprint.Z * CellSize * 0.5f);
+
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(ArenaPlacementOverlap), false);
+	return World->OverlapAnyTestByObjectType(
+		Center,
+		FQuat::Identity,
+		FCollisionObjectQueryParams(ECC_Pawn),
+		FCollisionShape::MakeBox(HalfExtent - FVector(2.f)),
+		Params);
 }
 
 FPlacementResult AArenaManager::TryPlace(UPlaceableDefinition* Definition, FIntVector Cell, int32 QuarterTurns, EPlacementOwner PlacementOwner)
@@ -310,6 +385,7 @@ FPlacementResult AArenaManager::TryPlace(UPlaceableDefinition* Definition, FIntV
 	for (const FIntVector& OccupiedCell : Cells)
 	{
 		Grid.SetState(OccupiedCell, EArenaCellState::Occupied);
+		Grid.SetMovementBlocked(OccupiedCell, Definition->bBlocksMovement);
 		ElementByCell.Add(OccupiedCell, Element);
 	}
 	PlacedElements.Add(Element);
@@ -459,13 +535,42 @@ void AArenaManager::Debug_LogState()
 
 	const int32 ValidCount = DebugDefinition ? GetValidSlots(DebugDefinition, DebugQuarterTurns, DebugOwner).Num() : 0;
 	ShowDebug(FString::Printf(
-		TEXT("Phase active: %s | MaxAllowed: %d | Player slots: %d | Enemy slots: %d | Elements: %d | Valid slots (debug def/owner): %d"),
+		TEXT("Phase active: %s | MaxAllowed: %d | Player slots: %d | Enemy slots: %d | Elements: %d | Valid slots (debug def/owner): %d | Path open: %s"),
 		bBuildPhaseActive ? TEXT("yes") : TEXT("no"),
 		CurrentMaxAllowed,
 		GetSlotsToPlace(EPlacementOwner::Player),
 		GetSlotsToPlace(EPlacementOwner::Enemy),
 		PlacedElements.Num(),
-		ValidCount), FColor::Cyan);
+		ValidCount,
+		IsPathOpen() ? TEXT("yes") : TEXT("no")), FColor::Cyan);
+}
+
+void AArenaManager::Debug_CheckNavPath()
+{
+	if (!CanRunDebugAction())
+	{
+		return;
+	}
+	if (!bHasPlayerSpawn || !bHasEnemySpawn)
+	{
+		ShowDebug(TEXT("Both spawn points are needed for the path check."), FColor::Orange);
+		return;
+	}
+	if (!UNavigationSystemV1::GetCurrent(GetWorld()))
+	{
+		ShowDebug(TEXT("No navigation system. Add a NavMeshBoundsVolume covering the arena."), FColor::Orange);
+		return;
+	}
+
+	UNavigationPath* Path = UNavigationSystemV1::FindPathToLocationSynchronously(this, PlayerSpawnLocation, EnemySpawnLocation);
+	const bool bNavOk = Path && Path->IsValid() && !Path->IsPartial();
+	const bool bGridOk = IsPathOpen();
+
+	ShowDebug(FString::Printf(TEXT("Path between spawns | NavMesh: %s | Grid check: %s | %s"),
+		bNavOk ? TEXT("open") : TEXT("blocked"),
+		bGridOk ? TEXT("open") : TEXT("blocked"),
+		bNavOk == bGridOk ? TEXT("consistent") : TEXT("MISMATCH (wait a second for the NavMesh to rebuild, then retry)")),
+		bNavOk == bGridOk ? FColor::Green : FColor::Orange);
 }
 
 // ---- Debug drawing ------------------------------------------------------------
