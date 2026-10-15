@@ -40,7 +40,9 @@ enum class EPlacementFailReason : uint8
 	/** A character stands inside the target cells. */
 	BlockedByCharacter,
 	/** The placement would cut every walkable path between the two spawns. */
-	BlocksPath
+	BlocksPath,
+	/** No valid cell exists for this element right now. */
+	NoValidSlot
 };
 
 USTRUCT(BlueprintType)
