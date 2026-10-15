@@ -37,7 +37,9 @@ enum class EPlacementFailReason : uint8
 	/** Stacking: the cells below the footprint are not occupied. */
 	NoSupport,
 	NoSlotsLeft,
-	/** Reserved: will be returned by the path check (BFS) in the next step. */
+	/** A character stands inside the target cells. */
+	BlockedByCharacter,
+	/** The placement would cut every walkable path between the two spawns. */
 	BlocksPath
 };
 
