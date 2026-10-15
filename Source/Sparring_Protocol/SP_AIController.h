@@ -19,12 +19,17 @@ class SPARRING_PROTOCOL_API ASP_AIController : public AAIController
 
 public:
 	ASP_AIController();
-	virtual void Tick(float DelaTime) override;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	UBehaviorTree* BehaviorTreeAsset;
 
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
 	virtual void BeginPlay() override;
-	
+
+private:
+	void UpdateTargetActor();
+
+	FTimerHandle TargetUpdateTimerHandle;
+
 };
