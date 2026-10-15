@@ -87,6 +87,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Arena|Placement")
 	void ClearAllElements();
 
+	/** True if a walkable path exists between the two spawns (grid flood fill, no NavMesh involved). */
+	UFUNCTION(BlueprintPure, Category = "Arena|Placement")
+	bool IsPathOpen() const;
+
 	// ---- Events --------------------------------------------------------------
 
 	UPROPERTY(BlueprintAssignable, Category = "Arena|Events")
@@ -133,6 +137,10 @@ public:
 	UFUNCTION(CallInEditor, Category = "Debug|Test")
 	void Debug_LogState();
 
+	/** Compares the grid path check with a real NavMesh query between the spawns. Wait ~1 s after placing. */
+	UFUNCTION(CallInEditor, Category = "Debug|Test")
+	void Debug_CheckNavPath();
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Arena")
 	TObjectPtr<UArenaRulesConfig> Rules;
@@ -153,11 +161,19 @@ private:
 	void MarkSpawnExclusionZones();
 	void DrawDebugGrid() const;
 	bool CanRunDebugAction() const;
+	bool IsBlockedByCharacter(const FIntVector& Cell, const FIntVector& Footprint) const;
 
 	FArenaGrid Grid;
 
 	bool bBuildPhaseActive = false;
 	int32 CurrentMaxAllowed = 0;
+
+	bool bHasPlayerSpawn = false;
+	bool bHasEnemySpawn = false;
+	FIntVector PlayerSpawnCell = FIntVector::ZeroValue;
+	FIntVector EnemySpawnCell = FIntVector::ZeroValue;
+	FVector PlayerSpawnLocation = FVector::ZeroVector;
+	FVector EnemySpawnLocation = FVector::ZeroVector;
 
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<APlaceableElement>> PlacedElements;
