@@ -81,3 +81,5 @@ DerivedDataCache/*
 *_WwiseProject/*.wsettings
 *_WwiseProject/*.validationcache
 *.pdb
+Plugins/WwiseSoundEngine/ThirdParty/
+Plugins/Wwise/*.chm
