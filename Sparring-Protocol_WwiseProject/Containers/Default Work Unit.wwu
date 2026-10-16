@@ -92,6 +92,48 @@
 											</MediaIDList>
 										</AudioFileSource>
 									</ChildrenList>
+									<StateInfo>
+										<StateGroupList>
+											<StateGroupInfo>
+												<StateGroupRef Name="AI_Level" ID="{C0135F4A-43B9-4FC3-8F9E-9A9D4A8188B4}"/>
+												<StateGroupInfo Name="" ID="{DFDAF2DD-555F-446D-84A4-5B8B80CC1B68}" ShortID="790680099">
+													<PropertyList>
+														<Property Name="MusicSyncType" Type="int32" Value="2"/>
+													</PropertyList>
+												</StateGroupInfo>
+											</StateGroupInfo>
+										</StateGroupList>
+										<CustomStateList>
+											<CustomState>
+												<StateRef Name="Level4" ID="{59F167CF-E2C6-409F-AE00-E77943589DEC}"/>
+												<CustomState Name="" ID="{1572F396-4A61-4CAE-8BE2-3B107C5473AF}" ShortID="387024584"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level1" ID="{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"/>
+												<CustomState Name="" ID="{AFCF33F6-943A-4204-84CD-66E412AB07DF}" ShortID="1010403092"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="None" ID="{432D6CEE-BEBF-4227-8C30-3BE406FDEC73}"/>
+												<CustomState Name="" ID="{EA59E511-1F55-4971-A613-2622990B830A}" ShortID="185622988"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level2" ID="{0EF012F4-2B40-4458-8D27-5FE270328A0D}"/>
+												<CustomState Name="" ID="{B252BAD5-6485-46F1-ACE9-31E298357060}" ShortID="607973910"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level6" ID="{6972F7C6-5F5A-458A-9133-DBA413A41894}"/>
+												<CustomState Name="" ID="{243DACAB-6288-485B-82F7-76EF2BF429AD}" ShortID="483293644"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level5" ID="{A84D1CB5-A508-4A11-8416-1AC1B1D4BCF7}"/>
+												<CustomState Name="" ID="{8E98464F-A329-4DDD-A748-C8455846F174}" ShortID="210077428"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level3" ID="{8C0491F3-8594-4B93-A35B-1018582BA4F8}"/>
+												<CustomState Name="" ID="{8834AD23-32E6-406A-A374-9D1569A94BD4}" ShortID="498216197"/>
+											</CustomState>
+										</CustomStateList>
+									</StateInfo>
 									<ObjectLists>
 										<ObjectList Name="Sequences">
 											<MusicTrackSequence Name="" ID="{59128361-6536-4645-838D-492F48CDA393}">
@@ -136,6 +178,56 @@
 											</MediaIDList>
 										</AudioFileSource>
 									</ChildrenList>
+									<StateInfo>
+										<StateGroupList>
+											<StateGroupInfo>
+												<StateGroupRef Name="AI_Level" ID="{C0135F4A-43B9-4FC3-8F9E-9A9D4A8188B4}"/>
+												<StateGroupInfo Name="" ID="{826F89DE-A9D9-480F-92B0-74BBF1B99AC3}" ShortID="477166940">
+													<PropertyList>
+														<Property Name="MusicSyncType" Type="int32" Value="2"/>
+													</PropertyList>
+												</StateGroupInfo>
+											</StateGroupInfo>
+										</StateGroupList>
+										<CustomStateList>
+											<CustomState>
+												<StateRef Name="Level4" ID="{59F167CF-E2C6-409F-AE00-E77943589DEC}"/>
+												<CustomState Name="" ID="{A4B8FACB-A7CA-498A-A305-11EB02BA4270}" ShortID="1058439263"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level1" ID="{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"/>
+												<CustomState Name="" ID="{3ADA2C4F-5962-476C-8884-826EF9FC43C0}" ShortID="898812016">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="None" ID="{432D6CEE-BEBF-4227-8C30-3BE406FDEC73}"/>
+												<CustomState Name="" ID="{F2BFD66A-7DE2-4336-AC23-42171DC97186}" ShortID="395807558">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level2" ID="{0EF012F4-2B40-4458-8D27-5FE270328A0D}"/>
+												<CustomState Name="" ID="{9384AEB8-75F7-48D5-87FB-63C7F5DDF9A9}" ShortID="963256184"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level6" ID="{6972F7C6-5F5A-458A-9133-DBA413A41894}"/>
+												<CustomState Name="" ID="{D82CB715-8EA0-4243-B832-BA1D85E20DB6}" ShortID="21975844"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level5" ID="{A84D1CB5-A508-4A11-8416-1AC1B1D4BCF7}"/>
+												<CustomState Name="" ID="{CBFBFF65-1841-40DE-9E17-CA68DA9EB045}" ShortID="55287487"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level3" ID="{8C0491F3-8594-4B93-A35B-1018582BA4F8}"/>
+												<CustomState Name="" ID="{22F111B9-3756-4973-A6DC-3A9A243A125C}" ShortID="128873011"/>
+											</CustomState>
+										</CustomStateList>
+									</StateInfo>
 									<ObjectLists>
 										<ObjectList Name="Sequences">
 											<MusicTrackSequence Name="" ID="{6E3F4668-F66A-4C01-9272-2E203E82786A}">
@@ -180,6 +272,60 @@
 											</MediaIDList>
 										</AudioFileSource>
 									</ChildrenList>
+									<StateInfo>
+										<StateGroupList>
+											<StateGroupInfo>
+												<StateGroupRef Name="AI_Level" ID="{C0135F4A-43B9-4FC3-8F9E-9A9D4A8188B4}"/>
+												<StateGroupInfo Name="" ID="{C3F44746-C2F1-4E0B-8038-88B58F43860D}" ShortID="782298439">
+													<PropertyList>
+														<Property Name="MusicSyncType" Type="int32" Value="2"/>
+													</PropertyList>
+												</StateGroupInfo>
+											</StateGroupInfo>
+										</StateGroupList>
+										<CustomStateList>
+											<CustomState>
+												<StateRef Name="Level4" ID="{59F167CF-E2C6-409F-AE00-E77943589DEC}"/>
+												<CustomState Name="" ID="{2FA41571-8886-4BF6-BE23-AA56BFD927CF}" ShortID="613604831"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level1" ID="{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"/>
+												<CustomState Name="" ID="{20B9567B-F81F-4D6F-81E3-35A787091862}" ShortID="271594565">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="None" ID="{432D6CEE-BEBF-4227-8C30-3BE406FDEC73}"/>
+												<CustomState Name="" ID="{DA1B904D-802D-4897-892C-E05FF102867E}" ShortID="166171908">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level2" ID="{0EF012F4-2B40-4458-8D27-5FE270328A0D}"/>
+												<CustomState Name="" ID="{C4C08AED-F4D8-4721-B0D2-D0A20136B1AA}" ShortID="712135155">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level6" ID="{6972F7C6-5F5A-458A-9133-DBA413A41894}"/>
+												<CustomState Name="" ID="{A6801B31-EC69-4B24-9A9A-824048F95028}" ShortID="825407814"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level5" ID="{A84D1CB5-A508-4A11-8416-1AC1B1D4BCF7}"/>
+												<CustomState Name="" ID="{C9CFCAB7-2E47-40E7-8412-3A0F4B81F0ED}" ShortID="973305013"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level3" ID="{8C0491F3-8594-4B93-A35B-1018582BA4F8}"/>
+												<CustomState Name="" ID="{02760C21-9EDF-41EF-82B5-A90C37563F73}" ShortID="266310656"/>
+											</CustomState>
+										</CustomStateList>
+									</StateInfo>
 									<ObjectLists>
 										<ObjectList Name="Sequences">
 											<MusicTrackSequence Name="" ID="{4D4FC6E9-D903-404F-941F-D67FEDE77F82}">
@@ -224,6 +370,64 @@
 											</MediaIDList>
 										</AudioFileSource>
 									</ChildrenList>
+									<StateInfo>
+										<StateGroupList>
+											<StateGroupInfo>
+												<StateGroupRef Name="AI_Level" ID="{C0135F4A-43B9-4FC3-8F9E-9A9D4A8188B4}"/>
+												<StateGroupInfo Name="" ID="{8CC02512-BFD5-41C6-A015-D8053ACD38A0}" ShortID="808299756">
+													<PropertyList>
+														<Property Name="MusicSyncType" Type="int32" Value="2"/>
+													</PropertyList>
+												</StateGroupInfo>
+											</StateGroupInfo>
+										</StateGroupList>
+										<CustomStateList>
+											<CustomState>
+												<StateRef Name="Level4" ID="{59F167CF-E2C6-409F-AE00-E77943589DEC}"/>
+												<CustomState Name="" ID="{4002C6BF-130F-437A-A131-7498E2234BFD}" ShortID="30943384"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level1" ID="{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"/>
+												<CustomState Name="" ID="{BB119465-C788-4876-B74B-8CBCE73A0660}" ShortID="780409154">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="None" ID="{432D6CEE-BEBF-4227-8C30-3BE406FDEC73}"/>
+												<CustomState Name="" ID="{F5065351-2681-4F31-86FF-D71E441AF3A6}" ShortID="405288782">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level2" ID="{0EF012F4-2B40-4458-8D27-5FE270328A0D}"/>
+												<CustomState Name="" ID="{CB921595-1311-4884-A599-70249D055FD6}" ShortID="390037178">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level6" ID="{6972F7C6-5F5A-458A-9133-DBA413A41894}"/>
+												<CustomState Name="" ID="{EA205629-33A8-4FA5-8C9C-11C6DB97F469}" ShortID="886648056"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level5" ID="{A84D1CB5-A508-4A11-8416-1AC1B1D4BCF7}"/>
+												<CustomState Name="" ID="{CF4CB689-DB0F-481F-8D8E-283694BAD395}" ShortID="510015030"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level3" ID="{8C0491F3-8594-4B93-A35B-1018582BA4F8}"/>
+												<CustomState Name="" ID="{8C25C069-21E5-4C5D-94BC-1CD5B903C906}" ShortID="421970434">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+										</CustomStateList>
+									</StateInfo>
 									<ObjectLists>
 										<ObjectList Name="Sequences">
 											<MusicTrackSequence Name="" ID="{4DF54503-033C-4A88-901C-F51946BB217C}">
@@ -268,6 +472,68 @@
 											</MediaIDList>
 										</AudioFileSource>
 									</ChildrenList>
+									<StateInfo>
+										<StateGroupList>
+											<StateGroupInfo>
+												<StateGroupRef Name="AI_Level" ID="{C0135F4A-43B9-4FC3-8F9E-9A9D4A8188B4}"/>
+												<StateGroupInfo Name="" ID="{E95B8E1C-4F8F-4767-A2D1-5F5ECDB41A42}" ShortID="710184073">
+													<PropertyList>
+														<Property Name="MusicSyncType" Type="int32" Value="2"/>
+													</PropertyList>
+												</StateGroupInfo>
+											</StateGroupInfo>
+										</StateGroupList>
+										<CustomStateList>
+											<CustomState>
+												<StateRef Name="Level4" ID="{59F167CF-E2C6-409F-AE00-E77943589DEC}"/>
+												<CustomState Name="" ID="{B00E9DF1-9021-49AA-93BE-3AEB88D74247}" ShortID="893752197">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level1" ID="{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"/>
+												<CustomState Name="" ID="{E4585F45-8F11-4F70-A96B-E00F5CFCADFF}" ShortID="487024828">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="None" ID="{432D6CEE-BEBF-4227-8C30-3BE406FDEC73}"/>
+												<CustomState Name="" ID="{A5936126-4A06-4E15-A235-2B38E2DB7270}" ShortID="218522572">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level2" ID="{0EF012F4-2B40-4458-8D27-5FE270328A0D}"/>
+												<CustomState Name="" ID="{4BE2B79D-B974-4C67-935A-2E6E726240D9}" ShortID="688400197">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level6" ID="{6972F7C6-5F5A-458A-9133-DBA413A41894}"/>
+												<CustomState Name="" ID="{3B85F7BE-B713-426C-ADD7-75A3F459AB4F}" ShortID="811333724"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level5" ID="{A84D1CB5-A508-4A11-8416-1AC1B1D4BCF7}"/>
+												<CustomState Name="" ID="{2748C88B-DBF5-405D-822B-1057172BB0E7}" ShortID="493583508"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level3" ID="{8C0491F3-8594-4B93-A35B-1018582BA4F8}"/>
+												<CustomState Name="" ID="{729FF552-8E6A-4B88-9543-F912830638C4}" ShortID="901690551">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+										</CustomStateList>
+									</StateInfo>
 									<ObjectLists>
 										<ObjectList Name="Sequences">
 											<MusicTrackSequence Name="" ID="{B7C2B7AA-6BC5-4062-8D00-1AB9055199B5}">
@@ -312,6 +578,72 @@
 											</MediaIDList>
 										</AudioFileSource>
 									</ChildrenList>
+									<StateInfo>
+										<StateGroupList>
+											<StateGroupInfo>
+												<StateGroupRef Name="AI_Level" ID="{C0135F4A-43B9-4FC3-8F9E-9A9D4A8188B4}"/>
+												<StateGroupInfo Name="" ID="{2D873D10-4C87-4186-ACCB-309DD5CEA2CF}" ShortID="817963393">
+													<PropertyList>
+														<Property Name="MusicSyncType" Type="int32" Value="2"/>
+													</PropertyList>
+												</StateGroupInfo>
+											</StateGroupInfo>
+										</StateGroupList>
+										<CustomStateList>
+											<CustomState>
+												<StateRef Name="Level4" ID="{59F167CF-E2C6-409F-AE00-E77943589DEC}"/>
+												<CustomState Name="" ID="{B5B0C570-6145-44AD-9C9A-C177EF944B5E}" ShortID="819827900">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level1" ID="{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"/>
+												<CustomState Name="" ID="{8BF59C43-477B-49D5-A94F-57A17EC2DFA0}" ShortID="481947165">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="None" ID="{432D6CEE-BEBF-4227-8C30-3BE406FDEC73}"/>
+												<CustomState Name="" ID="{29587CF7-9BB0-4330-9DD1-EDCBE39630F8}" ShortID="479526946">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level2" ID="{0EF012F4-2B40-4458-8D27-5FE270328A0D}"/>
+												<CustomState Name="" ID="{0C4C2246-A687-4C9A-B637-146FC65C7463}" ShortID="84094428">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level6" ID="{6972F7C6-5F5A-458A-9133-DBA413A41894}"/>
+												<CustomState Name="" ID="{F1FB3234-BF5E-4FDE-AC3B-CCCEA795B66C}" ShortID="342462111"/>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level5" ID="{A84D1CB5-A508-4A11-8416-1AC1B1D4BCF7}"/>
+												<CustomState Name="" ID="{AAE5E0F4-F0C8-4069-A609-49B3D3C94DD1}" ShortID="777170816">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+											<CustomState>
+												<StateRef Name="Level3" ID="{8C0491F3-8594-4B93-A35B-1018582BA4F8}"/>
+												<CustomState Name="" ID="{1E19559D-E5A1-4B19-B54D-0D687C87DEBB}" ShortID="916957109">
+													<PropertyList>
+														<Property Name="Volume" Type="Real64" Value="-96"/>
+													</PropertyList>
+												</CustomState>
+											</CustomState>
+										</CustomStateList>
+									</StateInfo>
 									<ObjectLists>
 										<ObjectList Name="Sequences">
 											<MusicTrackSequence Name="" ID="{904FDD8D-371B-434D-90D1-CFCBF5978488}">
@@ -345,7 +677,232 @@
 							</ObjectLists>
 						</MusicSegment>
 					</ChildrenList>
+					<ObjectLists>
+						<ObjectList Name="Stingers">
+							<MusicStinger Name="" ID="{843768E7-1A9E-486B-A943-20599FC38837}">
+								<PropertyList>
+									<Property Name="DontPlayAgainTime" Type="Real64" Value="2"/>
+									<Property Name="PlaySegmentAt" Type="int16" Value="3"/>
+								</PropertyList>
+								<ReferenceList>
+									<Reference Name="Segment">
+										<ObjectRef Name="MX_Stinger_LevelUp" ID="{9EDAEB15-5F55-4EAA-9E76-5B93ED80C876}" WorkUnitID="{40953C4A-9E6B-4C99-983D-4F8DD26C289D}"/>
+									</Reference>
+									<Reference Name="Trigger">
+										<ObjectRef Name="AI_Evolve" ID="{969AB287-7250-48CF-8850-3343DBA333B3}" WorkUnitID="{23443771-7D0A-42CB-98BC-F8AFCC4FCD54}"/>
+									</Reference>
+								</ReferenceList>
+							</MusicStinger>
+						</ObjectList>
+					</ObjectLists>
 				</MusicPlaylistContainer>
+				<MusicSegment Name="MX_Stinger_LevelUp" ID="{9EDAEB15-5F55-4EAA-9E76-5B93ED80C876}" ShortID="677688546">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{FD468C91-2809-4F26-9841-92D68DB4834E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{51983B84-2EA3-45E2-B75C-8A261C750779}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<MusicTrack Name="MX_Stinger_LevelUp" ID="{C6353DB8-C96E-4512-B8AB-EC7DDB57E493}" ShortID="634073544">
+							<ReferenceList>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{51983B84-2EA3-45E2-B75C-8A261C750779}"/>
+								</Reference>
+								<Reference Name="TransitionRoot">
+									<Custom>
+										<MusicTransition Name="Root" ID="{CB87A350-69A8-4AE2-AB03-A04B88AB5850}">
+											<PropertyList>
+												<Property Name="IsFolder" Type="bool" Value="True"/>
+											</PropertyList>
+											<TransitionInfo/>
+										</MusicTransition>
+									</Custom>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MX_Stinger_LevelUp" ID="{FBDFAD60-4C59-42C8-A5BC-12064CD52CCC}">
+									<Language>SFX</Language>
+									<AudioFile>MX_Stinger_LevelUp.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="97707117"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ObjectLists>
+								<ObjectList Name="Sequences">
+									<MusicTrackSequence Name="" ID="{4BF468D3-062B-4C27-9395-59E5151EE1C5}">
+										<ObjectLists>
+											<ObjectList Name="Clips">
+												<MusicClip Name="MX_Stinger_LevelUp" ID="{167265E9-A51C-496C-8BDD-C2BD8A84E0E3}">
+													<PropertyList>
+														<Property Name="EndTrimOffset" Type="Real64" Value="2909.08333333333"/>
+														<Property Name="FadeInMode" Type="int16" Value="0"/>
+														<Property Name="FadeOutMode" Type="int16" Value="0"/>
+													</PropertyList>
+													<AudioSourceRef Name="MX_Stinger_LevelUp" ID="{FBDFAD60-4C59-42C8-A5BC-12064CD52CCC}"/>
+												</MusicClip>
+											</ObjectList>
+										</ObjectLists>
+									</MusicTrackSequence>
+								</ObjectList>
+							</ObjectLists>
+						</MusicTrack>
+					</ChildrenList>
+					<ObjectLists>
+						<ObjectList Name="Cues">
+							<MusicCue Name="Entry Cue" ID="{0596C212-8441-4D8D-A49C-5998DDC92DEC}"/>
+							<MusicCue Name="Exit Cue" ID="{DCC022E6-3100-4CD9-AD02-B6E6A744F71A}">
+								<PropertyList>
+									<Property Name="CueType" Type="int16" Value="1"/>
+									<Property Name="TimeMs" Type="Real64" Value="1000"/>
+								</PropertyList>
+							</MusicCue>
+						</ObjectList>
+					</ObjectLists>
+				</MusicSegment>
+				<MusicSegment Name="MX_Stinger_Death" ID="{CBA53570-F9A1-4F56-A7D0-DCC63343DAA1}" ShortID="260105262">
+					<PropertyList>
+						<Property Name="EndPosition" Type="Real64" Value="4363.64583333333"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{FD468C91-2809-4F26-9841-92D68DB4834E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{51983B84-2EA3-45E2-B75C-8A261C750779}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<MusicTrack Name="MX_Stinger_Death" ID="{3E7ED1C0-FD83-45CE-B75D-2AB242FC5358}" ShortID="963546969">
+							<ReferenceList>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{51983B84-2EA3-45E2-B75C-8A261C750779}"/>
+								</Reference>
+								<Reference Name="TransitionRoot">
+									<Custom>
+										<MusicTransition Name="Root" ID="{F87DCC69-7511-4220-B0D8-79654A07A086}">
+											<PropertyList>
+												<Property Name="IsFolder" Type="bool" Value="True"/>
+											</PropertyList>
+											<TransitionInfo/>
+										</MusicTransition>
+									</Custom>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MX_Stinger_Death" ID="{A3E8B8C7-DCCC-436D-B3FF-AA39C60C35BF}">
+									<Language>SFX</Language>
+									<AudioFile>MX_Stinger_Death.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="169673800"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ObjectLists>
+								<ObjectList Name="Sequences">
+									<MusicTrackSequence Name="" ID="{42EE87EA-86EA-4A61-AB74-87EA8BBBA4E8}">
+										<ObjectLists>
+											<ObjectList Name="Clips">
+												<MusicClip Name="MX_Stinger_Death" ID="{9D3BA22F-E0A7-4065-AEE4-4388A1D953F4}">
+													<PropertyList>
+														<Property Name="EndTrimOffset" Type="Real64" Value="4363.64583333333"/>
+														<Property Name="FadeInMode" Type="int16" Value="0"/>
+														<Property Name="FadeOutMode" Type="int16" Value="0"/>
+													</PropertyList>
+													<AudioSourceRef Name="MX_Stinger_Death" ID="{A3E8B8C7-DCCC-436D-B3FF-AA39C60C35BF}"/>
+												</MusicClip>
+											</ObjectList>
+										</ObjectLists>
+									</MusicTrackSequence>
+								</ObjectList>
+							</ObjectLists>
+						</MusicTrack>
+					</ChildrenList>
+					<ObjectLists>
+						<ObjectList Name="Cues">
+							<MusicCue Name="Entry Cue" ID="{C6490A10-B173-4E71-91C9-991FD351519D}"/>
+							<MusicCue Name="Exit Cue" ID="{2A74B2D8-3CF0-41FE-9714-7F6E5ADDF1A9}">
+								<PropertyList>
+									<Property Name="CueType" Type="int16" Value="1"/>
+									<Property Name="TimeMs" Type="Real64" Value="1000"/>
+								</PropertyList>
+							</MusicCue>
+						</ObjectList>
+					</ObjectLists>
+				</MusicSegment>
+				<MusicSegment Name="MX_Stinger_Victory" ID="{98E34998-9607-4700-B7EA-A7DDDADCF907}" ShortID="318423847">
+					<PropertyList>
+						<Property Name="EndPosition" Type="Real64" Value="4363.64583333333"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{FD468C91-2809-4F26-9841-92D68DB4834E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{51983B84-2EA3-45E2-B75C-8A261C750779}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<MusicTrack Name="MX_Stinger_Victory" ID="{1703BD86-B05F-4BFB-AC02-4B61C58BC84E}" ShortID="282199409">
+							<ReferenceList>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Main Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{51983B84-2EA3-45E2-B75C-8A261C750779}"/>
+								</Reference>
+								<Reference Name="TransitionRoot">
+									<Custom>
+										<MusicTransition Name="Root" ID="{44E39ACB-4091-4265-96FC-A63C8CDD673D}">
+											<PropertyList>
+												<Property Name="IsFolder" Type="bool" Value="True"/>
+											</PropertyList>
+											<TransitionInfo/>
+										</MusicTransition>
+									</Custom>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="MX_Stinger_Victory" ID="{288F6FAE-B82E-4C64-B785-D53ED3AAAFF7}">
+									<Language>SFX</Language>
+									<AudioFile>MX_Stinger_Victory.wav</AudioFile>
+									<MediaIDList>
+										<MediaID ID="712008934"/>
+									</MediaIDList>
+								</AudioFileSource>
+							</ChildrenList>
+							<ObjectLists>
+								<ObjectList Name="Sequences">
+									<MusicTrackSequence Name="" ID="{A4B8C5ED-7912-4CC6-B12D-E2FFC05434A2}">
+										<ObjectLists>
+											<ObjectList Name="Clips">
+												<MusicClip Name="MX_Stinger_Victory" ID="{4EB2746A-EDAA-4807-97CA-A21C5B44FA4B}">
+													<PropertyList>
+														<Property Name="EndTrimOffset" Type="Real64" Value="4363.64583333333"/>
+														<Property Name="FadeInMode" Type="int16" Value="0"/>
+														<Property Name="FadeOutMode" Type="int16" Value="0"/>
+													</PropertyList>
+													<AudioSourceRef Name="MX_Stinger_Victory" ID="{288F6FAE-B82E-4C64-B785-D53ED3AAAFF7}"/>
+												</MusicClip>
+											</ObjectList>
+										</ObjectLists>
+									</MusicTrackSequence>
+								</ObjectList>
+							</ObjectLists>
+						</MusicTrack>
+					</ChildrenList>
+					<ObjectLists>
+						<ObjectList Name="Cues">
+							<MusicCue Name="Entry Cue" ID="{DF9278DD-ADF6-49C4-8283-36A3E0634FF7}"/>
+							<MusicCue Name="Exit Cue" ID="{469DB466-15A0-4DB3-9D84-ADE1C8DFB61D}">
+								<PropertyList>
+									<Property Name="CueType" Type="int16" Value="1"/>
+									<Property Name="TimeMs" Type="Real64" Value="1000"/>
+								</PropertyList>
+							</MusicCue>
+						</ObjectList>
+					</ObjectLists>
+				</MusicSegment>
 			</ChildrenList>
 		</WorkUnit>
 	</Containers>

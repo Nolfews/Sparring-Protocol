@@ -83,3 +83,5 @@ DerivedDataCache/*
 *.pdb
 Plugins/WwiseSoundEngine/ThirdParty/
 Plugins/Wwise/*.chm
+Sparring-Protocol_WwiseProject/.cache/CacheVersion
+Sparring-Protocol_WwiseProject/Sparring-Protocol_WwiseProject.samue.validationcache
