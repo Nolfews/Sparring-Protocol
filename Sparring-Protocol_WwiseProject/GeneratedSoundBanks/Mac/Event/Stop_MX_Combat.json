@@ -1,0 +1,33 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "3722796774",
+    "Type": "Event",
+    "GUID": "{85E72BFF-5EBE-4897-8385-105AF30A024E}",
+    "Language": "SFX",
+    "Hash": "{D73B9384-BEF0-6A76-D168-B235729892AB}",
+    "ObjectPath": "Stop_MX_Combat",
+    "ShortName": "Stop_MX_Combat",
+    "Path": "Event/Stop_MX_Combat.bnk",
+    "Events": [
+     {
+      "Id": "3722796774",
+      "Name": "Stop_MX_Combat",
+      "ObjectPath": "\\Events\\Default Work Unit\\Stop_MX_Combat",
+      "GUID": "{85E72BFF-5EBE-4897-8385-105AF30A024E}",
+      "MaxAttenuation": "0",
+      "DurationType": "OneShot",
+      "DurationMin": "0",
+      "DurationMax": "0"
+     }
+    ]
+   }
+  ],
+  "FileHash": "{D7A3CBCA-6BC0-69D2-6177-E4856DF8DD17}"
+ }
+}

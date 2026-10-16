@@ -1,0 +1,101 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1355168291",
+    "Type": "User",
+    "GUID": "{701ECBBD-9C7B-4030-8CDB-749EE5D1C7B9}",
+    "Language": "SFX",
+    "Hash": "{5E52CE67-5893-0C6E-1844-A52562252DAA}",
+    "ObjectPath": "Init",
+    "ShortName": "Init",
+    "Path": "Init.bnk",
+    "Plugins": {
+     "AudioDevices": [
+      {
+       "Id": "2317455096",
+       "Name": "No_Output",
+       "ObjectPath": "\\Devices\\Default Work Unit\\No_Output",
+       "GUID": "{E655C2B8-89A3-49C1-94D0-1B9A6BDB3E02}",
+       "LibName": "No Output",
+       "LibId": "11862023"
+      },
+      {
+       "Id": "3859886410",
+       "Name": "System",
+       "ObjectPath": "\\Devices\\Default Work Unit\\System",
+       "GUID": "{6C892F54-A2B8-44A8-8AAE-0D0EFB771C01}",
+       "LibName": "System",
+       "LibId": "11403271"
+      }
+     ]
+    },
+    "Busses": [
+     {
+      "Id": "2246998526",
+      "Name": "Main Audio Bus",
+      "ObjectPath": "\\Busses\\Default Work Unit\\Main Audio Bus",
+      "GUID": "{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}"
+     }
+    ],
+    "StateGroups": [
+     {
+      "Id": "2655919408",
+      "Name": "AI_Level",
+      "ObjectPath": "\\States\\Default Work Unit\\AI_Level",
+      "GUID": "{C0135F4A-43B9-4FC3-8F9E-9A9D4A8188B4}",
+      "States": [
+       {
+        "Id": "748895195",
+        "Name": "None",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\None",
+        "GUID": "{432D6CEE-BEBF-4227-8C30-3BE406FDEC73}"
+       },
+       {
+        "Id": "2678230377",
+        "Name": "Level6",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level6",
+        "GUID": "{6972F7C6-5F5A-458A-9133-DBA413A41894}"
+       },
+       {
+        "Id": "2678230378",
+        "Name": "Level5",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level5",
+        "GUID": "{A84D1CB5-A508-4A11-8416-1AC1B1D4BCF7}"
+       },
+       {
+        "Id": "2678230379",
+        "Name": "Level4",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level4",
+        "GUID": "{59F167CF-E2C6-409F-AE00-E77943589DEC}"
+       },
+       {
+        "Id": "2678230380",
+        "Name": "Level3",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level3",
+        "GUID": "{8C0491F3-8594-4B93-A35B-1018582BA4F8}"
+       },
+       {
+        "Id": "2678230381",
+        "Name": "Level2",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level2",
+        "GUID": "{0EF012F4-2B40-4458-8D27-5FE270328A0D}"
+       },
+       {
+        "Id": "2678230382",
+        "Name": "Level1",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level1",
+        "GUID": "{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{982CE2CF-BC6C-7B9D-3929-70FED1CFEA1D}"
+ }
+}
