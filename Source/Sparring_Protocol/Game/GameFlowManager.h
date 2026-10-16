@@ -3,11 +3,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "InputCoreTypes.h"
+#include "Arena/ArenaTypes.h"
 #include "GameFlowManager.generated.h"
 
 class AArenaManager;
 class UPlaceableDefinition;
 class UInputComponent;
+class AArenaSpawnPoint;
+class APawn;
 
 /** Where the run currently is. */
 UENUM(BlueprintType)
@@ -28,6 +31,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameFlowStateChanged, EGameFlowS
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStarted, int32, RoundNumber);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRoundEnded, int32, RoundNumber, bool, bPlayerWon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRunEnded, int32, RoundsWon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemySpawned, APawn*, Enemy);
 
 /**
  * Drives the run: tutorial combat -> tutorial build -> round 1 -> build -> round 2 -> build ...
@@ -85,6 +89,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "GameFlow")
 	bool IsCombatActive() const { return State == EGameFlowState::TutorialCombat || State == EGameFlowState::RoundCombat; }
 
+	/** The enemy of the current combat, or null outside combat (the enemy only exists during combat). */
+	UFUNCTION(BlueprintPure, Category = "GameFlow")
+	APawn* GetEnemy() const { return SpawnedEnemy; }
+
 	// ---- Events --------------------------------------------------------------
 
 	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
@@ -98,6 +106,10 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
 	FOnRunEnded OnRunEnded;
+
+	/** Fired each time a fresh enemy is spawned for a combat (tutorial included). Apply its round stats here. */
+	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
+	FOnEnemySpawned OnEnemySpawned;
 
 	// ---- Debug (play in editor: keys, or select this actor and use the buttons) ----
 
@@ -131,6 +143,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|Enemy")
 	TArray<TObjectPtr<UPlaceableDefinition>> EnemyDefinitions;
 
+	/** Pawn spawned at the enemy spawn point at the start of each combat and removed afterwards. Use the Blueprint child of the enemy character. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|Enemy")
+	TSubclassOf<APawn> EnemyClass;
+
+	/** Stops the enemy behavior during the combat tutorial so it does not fight back. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|Enemy")
+	bool bFreezeEnemyInTutorial = true;
+
+	/** Moves the player pawn to its spawn point at the start of every step (combat and build). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|Player")
+	bool bTeleportPlayerToSpawn = true;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug|Flow")
 	FKey NextStepKey = EKeys::F6;
 
@@ -155,6 +179,11 @@ private:
 	void BeginBuildStep();
 	void StartCombatRound();
 	void PlaceEnemyElements();
+	void SetupActorsForState();
+	void PlacePlayerAtSpawn();
+	void SpawnEnemy();
+	void DespawnEnemy();
+	AArenaSpawnPoint* FindSpawnPoint(EPlacementOwner PlacementOwner) const;
 	void BindDebugInput();
 	void RefreshHud() const;
 	bool CanRunDebugAction() const;
@@ -170,4 +199,7 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UInputComponent> DebugInput;
+
+	UPROPERTY(Transient)
+	TObjectPtr<APawn> SpawnedEnemy;
 };
