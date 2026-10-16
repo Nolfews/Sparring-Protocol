@@ -1,3 +1,0 @@
-Event	ID	Name			Wwise Object Path	Notes
-	655417330	MX_AI_Level2			\Default Work Unit\MX_AI_Level2	
-
