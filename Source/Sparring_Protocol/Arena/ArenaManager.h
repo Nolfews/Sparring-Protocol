@@ -80,6 +80,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Arena|Placement")
 	TArray<FIntVector> GetValidSlots(UPlaceableDefinition* Definition, int32 QuarterTurns, EPlacementOwner PlacementOwner) const;
 
+	/** Places the definition on a random valid cell (random rotation when allowed). What a scripted AI uses. */
+	UFUNCTION(BlueprintCallable, Category = "Arena|Placement")
+	FPlacementResult TryPlaceRandom(UPlaceableDefinition* Definition, EPlacementOwner PlacementOwner);
+
 	UFUNCTION(BlueprintPure, Category = "Arena|Placement")
 	APlaceableElement* GetElementAtCell(FIntVector Cell) const;
 

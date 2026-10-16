@@ -416,6 +416,37 @@ TArray<FIntVector> AArenaManager::GetValidSlots(UPlaceableDefinition* Definition
 	return Result;
 }
 
+FPlacementResult AArenaManager::TryPlaceRandom(UPlaceableDefinition* Definition, EPlacementOwner PlacementOwner)
+{
+	if (!Definition || !Definition->ElementClass)
+	{
+		return FPlacementResult::MakeFailure(EPlacementFailReason::InvalidDefinition);
+	}
+	if (!bBuildPhaseActive)
+	{
+		return FPlacementResult::MakeFailure(EPlacementFailReason::NotInBuildPhase);
+	}
+	if (GetSlotsToPlace(PlacementOwner) < Definition->Cost)
+	{
+		return FPlacementResult::MakeFailure(EPlacementFailReason::NoSlotsLeft);
+	}
+
+	// Try every rotation (starting from a random one) until a valid cell exists.
+	const int32 TurnAttempts = Definition->bAllowRotation ? 4 : 1;
+	const int32 FirstTurn = Definition->bAllowRotation ? FMath::RandRange(0, 3) : 0;
+	for (int32 Attempt = 0; Attempt < TurnAttempts; ++Attempt)
+	{
+		const int32 Turns = (FirstTurn + Attempt) % 4;
+		const TArray<FIntVector> Slots = GetValidSlots(Definition, Turns, PlacementOwner);
+		if (!Slots.IsEmpty())
+		{
+			return TryPlace(Definition, Slots[FMath::RandRange(0, Slots.Num() - 1)], Turns, PlacementOwner);
+		}
+	}
+
+	return FPlacementResult::MakeFailure(EPlacementFailReason::NoValidSlot);
+}
+
 APlaceableElement* AArenaManager::GetElementAtCell(FIntVector Cell) const
 {
 	if (const TWeakObjectPtr<APlaceableElement>* Found = ElementByCell.Find(Cell))
