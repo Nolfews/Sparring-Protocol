@@ -93,6 +93,14 @@ void AArenaManager::RebuildGrid()
 	Grid.Initialize(Size, Rules->CellSize, Origin);
 	UpdateFloor();
 	MarkSpawnExclusionZones();
+
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+
+
+	if (NavSys)
+	{
+		NavSys->Build();
+	}
 }
 
 void AArenaManager::UpdateFloor()
