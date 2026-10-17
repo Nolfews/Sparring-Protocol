@@ -1,6 +1,12 @@
 #include "Game/GameFlowManager.h"
 #include "Arena/ArenaManager.h"
 #include "Placement/PlaceableDefinition.h"
+#include "Arena/ArenaSpawnPoint.h"
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,6 +22,19 @@ namespace
 	constexpr uint64 HudKeyInstruction = 8002;
 	constexpr uint64 HudKeyDebugHelp = 8003;
 	constexpr float HudDuration = 100000.f;
+
+	/** Half height of the capsule of a character, so it can be placed on the floor instead of inside it. */
+	float GetCapsuleHalfHeight(const UObject* PawnOrClassDefault)
+	{
+		if (const ACharacter* Character = Cast<ACharacter>(PawnOrClassDefault))
+		{
+			if (const UCapsuleComponent* Capsule = Character->GetCapsuleComponent())
+			{
+				return Capsule->GetScaledCapsuleHalfHeight();
+			}
+		}
+		return 0.f;
+	}
 }
 
 AGameFlowManager::AGameFlowManager()
@@ -204,10 +223,139 @@ void AGameFlowManager::PlaceEnemyElements()
 	}
 }
 
+// ---- Actors of each step --------------------------------------------------------
+//  Combat steps: player and enemy each at their own spawn point.
+//  Build steps : only the player (the enemy does not exist).
+
+AArenaSpawnPoint* AGameFlowManager::FindSpawnPoint(EPlacementOwner PlacementOwner) const
+{
+	for (TActorIterator<AArenaSpawnPoint> It(GetWorld()); It; ++It)
+	{
+		if (It->GetSpawnOwner() == PlacementOwner)
+		{
+			return *It;
+		}
+	}
+	return nullptr;
+}
+
+void AGameFlowManager::SetupActorsForState()
+{
+	switch (State)
+	{
+	case EGameFlowState::TutorialCombat:
+	case EGameFlowState::RoundCombat:
+		PlacePlayerAtSpawn();
+		SpawnEnemy();
+		break;
+	case EGameFlowState::TutorialBuild:
+	case EGameFlowState::Build:
+		DespawnEnemy();
+		PlacePlayerAtSpawn();
+		break;
+	case EGameFlowState::GameOver:
+		DespawnEnemy();
+		break;
+	default:
+		break;
+	}
+}
+
+void AGameFlowManager::PlacePlayerAtSpawn()
+{
+	if (!bTeleportPlayerToSpawn)
+	{
+		return;
+	}
+
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	const AArenaSpawnPoint* SpawnPoint = FindSpawnPoint(EPlacementOwner::Player);
+	if (!PlayerPawn || !SpawnPoint)
+	{
+		UE_LOG(LogGameFlow, Warning, TEXT("Cannot place the player: %s."), PlayerPawn ? TEXT("no player spawn point in the level") : TEXT("no player pawn"));
+		return;
+	}
+
+	const FVector Location = SpawnPoint->GetActorLocation() + FVector(0.f, 0.f, GetCapsuleHalfHeight(PlayerPawn) + 2.f);
+	const FRotator Rotation = SpawnPoint->GetActorRotation();
+
+	PlayerPawn->SetActorLocationAndRotation(Location, Rotation, false, nullptr, ETeleportType::TeleportPhysics);
+	if (const ACharacter* Character = Cast<ACharacter>(PlayerPawn))
+	{
+		if (UCharacterMovementComponent* Movement = Character->GetCharacterMovement())
+		{
+			Movement->StopMovementImmediately();
+		}
+	}
+	if (AController* Controller = PlayerPawn->GetController())
+	{
+		Controller->SetControlRotation(Rotation);
+	}
+}
+
+void AGameFlowManager::SpawnEnemy()
+{
+	DespawnEnemy();
+
+	if (!EnemyClass)
+	{
+		UE_LOG(LogGameFlow, Warning, TEXT("EnemyClass is not set on %s: no enemy will be spawned."), *GetName());
+		return;
+	}
+
+	const AArenaSpawnPoint* SpawnPoint = FindSpawnPoint(EPlacementOwner::Enemy);
+	if (!SpawnPoint)
+	{
+		UE_LOG(LogGameFlow, Warning, TEXT("No enemy spawn point in the level."));
+		return;
+	}
+
+	const float HalfHeight = GetCapsuleHalfHeight(EnemyClass->GetDefaultObject());
+	const FVector Location = SpawnPoint->GetActorLocation() + FVector(0.f, 0.f, HalfHeight + 2.f);
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	SpawnedEnemy = GetWorld()->SpawnActor<APawn>(EnemyClass, Location, SpawnPoint->GetActorRotation(), Params);
+	if (!SpawnedEnemy)
+	{
+		UE_LOG(LogGameFlow, Warning, TEXT("Failed to spawn the enemy."));
+		return;
+	}
+
+	// Combat tutorial: the enemy must not fight back. Its AI controller exists right after spawning.
+	if (State == EGameFlowState::TutorialCombat && bFreezeEnemyInTutorial)
+	{
+		if (AAIController* AIController = Cast<AAIController>(SpawnedEnemy->GetController()))
+		{
+			AIController->StopMovement();
+			if (UBrainComponent* Brain = AIController->GetBrainComponent())
+			{
+				Brain->StopLogic(TEXT("Combat tutorial"));
+			}
+		}
+	}
+
+	OnEnemySpawned.Broadcast(SpawnedEnemy);
+}
+
+void AGameFlowManager::DespawnEnemy()
+{
+	if (IsValid(SpawnedEnemy))
+	{
+		if (AController* Controller = SpawnedEnemy->GetController())
+		{
+			Controller->Destroy();
+		}
+		SpawnedEnemy->Destroy();
+	}
+	SpawnedEnemy = nullptr;
+}
+
 void AGameFlowManager::SetState(EGameFlowState NewState)
 {
 	const EGameFlowState Previous = State;
 	State = NewState;
+	SetupActorsForState(); // Before the broadcast, so listeners find the enemy already in place.
 	RefreshHud();
 	OnStateChanged.Broadcast(NewState, Previous);
 }
