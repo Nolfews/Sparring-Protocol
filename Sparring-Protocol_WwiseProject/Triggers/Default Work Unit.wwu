@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{23443771-7D0A-42CB-98BC-F8AFCC4FCD54}" SchemaVersion="133">
+	<Triggers>
+		<WorkUnit Name="Default Work Unit" ID="{23443771-7D0A-42CB-98BC-F8AFCC4FCD54}" PersistMode="Standalone">
+			<ChildrenList>
+				<Trigger Name="AI_Evolve" ID="{969AB287-7250-48CF-8850-3343DBA333B3}"/>
+			</ChildrenList>
+		</WorkUnit>
+	</Triggers>
+</WwiseDocument>

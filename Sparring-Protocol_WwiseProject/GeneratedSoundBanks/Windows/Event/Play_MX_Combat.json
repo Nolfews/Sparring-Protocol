@@ -1,0 +1,187 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "3823105308",
+    "Type": "Event",
+    "GUID": "{B58D7168-2F4E-4CE7-9980-9677B70ECDB6}",
+    "Language": "SFX",
+    "Hash": "{A87DEA2F-F6EF-DB60-3277-6A7C614BFCAA}",
+    "ObjectPath": "Play_MX_Combat",
+    "ShortName": "Play_MX_Combat",
+    "Path": "Event/Play_MX_Combat.bnk",
+    "Media": [
+     {
+      "Id": "47596628",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "MX_Combat_L4.wav",
+      "Path": "Media/47596628.wem",
+      "CachePath": "FC/{FC4F9CC6-2120-DB0B-114A-9E3FD84CE15A}.wem"
+     },
+     {
+      "Id": "97707117",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "MX_Stinger_LevelUp.wav",
+      "Path": "Media/97707117.wem",
+      "CachePath": "0E/{0E8AE60C-E955-3450-9F7D-90F82FFC310A}.wem"
+     },
+     {
+      "Id": "206189155",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "MX_Combat_L1.wav",
+      "Path": "Media/206189155.wem",
+      "CachePath": "5A/{5AFD02D9-B4BE-C378-7B34-106D9D2133ED}.wem"
+     },
+     {
+      "Id": "264063667",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "MX_Combat_L3.wav",
+      "Path": "Media/264063667.wem",
+      "CachePath": "F4/{F48C8EFE-4CF4-F7D1-B7BF-97F4F6F80C48}.wem"
+     },
+     {
+      "Id": "576689926",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "MX_Combat_L5.wav",
+      "Path": "Media/576689926.wem",
+      "CachePath": "4B/{4BED690C-152A-E2C7-D41C-C4E41F65F252}.wem"
+     },
+     {
+      "Id": "587733452",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "MX_Combat_L2.wav",
+      "Path": "Media/587733452.wem",
+      "CachePath": "6A/{6AC2122C-5F20-2542-98B8-32A5924D08DF}.wem"
+     },
+     {
+      "Id": "1003057782",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "MX_Combat_L6.wav",
+      "Path": "Media/1003057782.wem",
+      "CachePath": "49/{49D66033-189D-18B5-75C8-49E238F058A0}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "3823105308",
+      "Name": "Play_MX_Combat",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_MX_Combat",
+      "GUID": "{B58D7168-2F4E-4CE7-9980-9677B70ECDB6}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "47596628"
+       },
+       {
+        "Id": "97707117"
+       },
+       {
+        "Id": "206189155"
+       },
+       {
+        "Id": "264063667"
+       },
+       {
+        "Id": "576689926"
+       },
+       {
+        "Id": "587733452"
+       },
+       {
+        "Id": "1003057782"
+       }
+      ],
+      "ActionSetState": [
+       {
+        "GroupId": "2655919408",
+        "Id": "2678230382",
+        "Name": "Level1",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level1",
+        "GUID": "{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"
+       }
+      ]
+     }
+    ],
+    "StateGroups": [
+     {
+      "Id": "2655919408",
+      "Name": "AI_Level",
+      "ObjectPath": "\\States\\Default Work Unit\\AI_Level",
+      "GUID": "{C0135F4A-43B9-4FC3-8F9E-9A9D4A8188B4}",
+      "States": [
+       {
+        "Id": "748895195",
+        "Name": "None",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\None",
+        "GUID": "{432D6CEE-BEBF-4227-8C30-3BE406FDEC73}"
+       },
+       {
+        "Id": "2678230377",
+        "Name": "Level6",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level6",
+        "GUID": "{6972F7C6-5F5A-458A-9133-DBA413A41894}"
+       },
+       {
+        "Id": "2678230378",
+        "Name": "Level5",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level5",
+        "GUID": "{A84D1CB5-A508-4A11-8416-1AC1B1D4BCF7}"
+       },
+       {
+        "Id": "2678230379",
+        "Name": "Level4",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level4",
+        "GUID": "{59F167CF-E2C6-409F-AE00-E77943589DEC}"
+       },
+       {
+        "Id": "2678230380",
+        "Name": "Level3",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level3",
+        "GUID": "{8C0491F3-8594-4B93-A35B-1018582BA4F8}"
+       },
+       {
+        "Id": "2678230381",
+        "Name": "Level2",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level2",
+        "GUID": "{0EF012F4-2B40-4458-8D27-5FE270328A0D}"
+       },
+       {
+        "Id": "2678230382",
+        "Name": "Level1",
+        "ObjectPath": "\\States\\Default Work Unit\\AI_Level\\Level1",
+        "GUID": "{15883E81-7B43-415A-BCFC-E4067CBC1CBC}"
+       }
+      ]
+     }
+    ],
+    "Triggers": [
+     {
+      "Id": "2235276385",
+      "Name": "AI_Evolve",
+      "ObjectPath": "\\Triggers\\Default Work Unit\\AI_Evolve",
+      "GUID": "{969AB287-7250-48CF-8850-3343DBA333B3}"
+     }
+    ]
+   }
+  ],
+  "FileHash": "{3BC3FA99-64CD-F0C8-2EE1-5CE2C1408BF0}"
+ }
+}
