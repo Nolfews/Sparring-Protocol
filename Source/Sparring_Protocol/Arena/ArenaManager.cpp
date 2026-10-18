@@ -93,14 +93,6 @@ void AArenaManager::RebuildGrid()
 	Grid.Initialize(Size, Rules->CellSize, Origin);
 	UpdateFloor();
 	MarkSpawnExclusionZones();
-
-	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-
-
-	if (NavSys)
-	{
-		NavSys->Build();
-	}
 }
 
 void AArenaManager::UpdateFloor()
@@ -387,7 +379,8 @@ FPlacementResult AArenaManager::TryPlace(UPlaceableDefinition* Definition, FIntV
 		return FPlacementResult::MakeFailure(EPlacementFailReason::InvalidDefinition);
 	}
 
-	Element->Initialize(Definition, PlacementOwner, Cells);
+	Element->Initialize(Definition, PlacementOwner, Cells,
+		FVector(Footprint.X * CellSize, Footprint.Y * CellSize, Footprint.Z * CellSize));
 	Element->FinishSpawning(SpawnTransform);
 
 	for (const FIntVector& OccupiedCell : Cells)
@@ -464,6 +457,57 @@ APlaceableElement* AArenaManager::GetElementAtCell(FIntVector Cell) const
 	return nullptr;
 }
 
+int32 AArenaManager::AgeElements()
+{
+	// Work on a copy: removing an element can collapse others and modify the live array.
+	const TArray<TObjectPtr<APlaceableElement>> Snapshot = PlacedElements;
+
+	int32 Expired = 0;
+	for (APlaceableElement* Element : Snapshot)
+	{
+		if (!IsValid(Element) || !PlacedElements.Contains(Element))
+		{
+			continue; // Already removed by a collapse.
+		}
+		if (Element->AgeOneRound())
+		{
+			RemoveElement(Element);
+			++Expired;
+		}
+	}
+	return Expired;
+}
+
+void AArenaManager::RemoveElement(APlaceableElement* Element)
+{
+	if (!IsValid(Element) || !PlacedElements.Contains(Element))
+	{
+		return;
+	}
+
+	const TArray<FIntVector> Cells = Element->GetOccupiedCells(); // Copy: the element is about to go.
+
+	PlacedElements.Remove(Element);
+	for (const FIntVector& Cell : Cells)
+	{
+		Grid.SetState(Cell, EArenaCellState::Free);
+		Grid.SetMovementBlocked(Cell, false);
+		ElementByCell.Remove(Cell);
+	}
+
+	Element->Break();
+	OnElementRemoved.Broadcast(Element);
+
+	// Anything resting on the freed cells lost its support and collapses too.
+	for (const FIntVector& Cell : Cells)
+	{
+		if (APlaceableElement* Above = GetElementAtCell(Cell + FIntVector(0, 0, 1)))
+		{
+			RemoveElement(Above);
+		}
+	}
+}
+
 void AArenaManager::ClearAllElements()
 {
 	for (TObjectPtr<APlaceableElement>& Element : PlacedElements)
@@ -482,6 +526,34 @@ void AArenaManager::ClearAllElements()
 }
 
 // ---- Debug harness ------------------------------------------------------------
+
+void AArenaManager::Debug_AgeElements()
+{
+	if (!CanRunDebugAction())
+	{
+		return;
+	}
+	const int32 Expired = AgeElements();
+	ShowDebug(FString::Printf(TEXT("Elements aged by one round. Expired: %d | Elements left: %d"), Expired, PlacedElements.Num()), FColor::Cyan);
+}
+
+void AArenaManager::Debug_RemoveElementAtDebugCell()
+{
+	if (!CanRunDebugAction())
+	{
+		return;
+	}
+
+	APlaceableElement* Element = GetElementAtCell(DebugCell);
+	if (!Element)
+	{
+		ShowDebug(TEXT("No element at the debug cell."), FColor::Orange);
+		return;
+	}
+	RemoveElement(Element);
+	ShowDebug(FString::Printf(TEXT("Removed the element at (%d, %d, %d). Elements left: %d"),
+		DebugCell.X, DebugCell.Y, DebugCell.Z, PlacedElements.Num()), FColor::Cyan);
+}
 
 bool AArenaManager::CanRunDebugAction() const
 {
