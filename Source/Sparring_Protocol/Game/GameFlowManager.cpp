@@ -187,6 +187,13 @@ void AGameFlowManager::NotifyRoundWon()
 
 	++RoundsWon;
 	OnRoundEnded.Broadcast(CurrentRound, true);
+
+	// Everything built so far gets one round older; expired elements break before the next build phase.
+	if (ArenaManager)
+	{
+		ArenaManager->AgeElements();
+	}
+
 	BeginBuildStep();
 }
 
