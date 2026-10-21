@@ -354,11 +354,16 @@ void UPlacementComponent::UpdateHud(const UPlaceableDefinition* Definition, cons
 		? Definition->DisplayName.ToString()
 		: GetNameSafe(Definition);
 
+	const FString Lifetime = (Definition && Definition->LifetimeRounds > 0)
+		? FString::Printf(TEXT("lasts %d rounds"), Definition->LifetimeRounds)
+		: FString(TEXT("permanent"));
+
 	GEngine->AddOnScreenDebugMessage(HudKeyHeader, 0.f, FColor::Cyan,
-		FString::Printf(TEXT("BUILD MODE | %s | Slots left: %d / %d | Rotation: %d deg"),
+		FString::Printf(TEXT("BUILD MODE | %s | Slots left: %d / %d | %s | Rotation: %d deg"),
 			*Name,
 			Manager->GetSlotsToPlace(EPlacementOwner::Player),
 			Manager->GetMaxAllowed(),
+			*Lifetime,
 			GetEffectiveTurns(Definition) * 90));
 
 	GEngine->AddOnScreenDebugMessage(HudKeyStatus, 0.f, StatusColor, Status);

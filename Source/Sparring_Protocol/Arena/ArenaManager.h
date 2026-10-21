@@ -91,6 +91,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Arena|Placement")
 	void ClearAllElements();
 
+	// ---- Lifetime and removal ------------------------------------------------
+
+	/** Ages every element by one round (call once at the end of each combat round). Returns how many expired. */
+	UFUNCTION(BlueprintCallable, Category = "Arena|Lifetime")
+	int32 AgeElements();
+
+	/**
+	 * Removes an element: frees its cells, plays its break effect, and collapses whatever rested on it.
+	 * Also the entry point for destruction by gunfire later.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Arena|Lifetime")
+	void RemoveElement(APlaceableElement* Element);
+
 	/** True if a walkable path exists between the two spawns (grid flood fill, no NavMesh involved). */
 	UFUNCTION(BlueprintPure, Category = "Arena|Placement")
 	bool IsPathOpen() const;
@@ -105,6 +118,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Arena|Events")
 	FOnBuildPhaseFinished OnBuildPhaseFinished;
+
+	UPROPERTY(BlueprintAssignable, Category = "Arena|Events")
+	FOnElementRemoved OnElementRemoved;
 
 	// ---- Debug test harness (play in editor, select this actor, use the buttons) ----
 
@@ -144,6 +160,14 @@ public:
 	/** Compares the grid path check with a real NavMesh query between the spawns. Wait ~1 s after placing. */
 	UFUNCTION(CallInEditor, Category = "Debug|Test")
 	void Debug_CheckNavPath();
+
+	/** Ages every element by one round, as the end of a combat round would. */
+	UFUNCTION(CallInEditor, Category = "Debug|Test")
+	void Debug_AgeElements();
+
+	/** Removes the element at Debug Cell (tests the cell release and the collapse of stacked elements). */
+	UFUNCTION(CallInEditor, Category = "Debug|Test")
+	void Debug_RemoveElementAtDebugCell();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Arena")

@@ -83,3 +83,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuildPhaseStarted, int32, PlayerS
 
 /** Broadcast when a build phase ends. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildPhaseFinished);
+
+/** Broadcast when an element leaves the arena (expired, destroyed or collapsed). */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnElementRemoved, APlaceableElement*, Element);
