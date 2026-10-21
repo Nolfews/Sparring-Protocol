@@ -82,7 +82,7 @@ FWwiseAssetLibraryPreCooker::FAssetLibraryInfoMap FWwiseAssetLibraryPreCooker::P
 		}
 
 		AssetLibrary->Info.PreloadFilters();
-		FWwiseAssetLibraryProcessor::GetRelevantAssets(AssetLibrary->RelevantGameplayModulePaths, FilteringSharedData->AssetsData, AssetLibrary->ExcludedGameplayModulePaths);
+		FWwiseAssetLibraryProcessor::GetRelevantAssets(AssetLibrary->RelevantGameplayModulePaths, FilteringSharedData->AssetsData, AssetLibrary->ExcludedGameplayModulePaths, true);
 		Processor->FilterLibraryAssets(*FilteringSharedData, AssetLibrary->Info,
 			!AssetLibrary->bFallthrough && Iter < AssetLibraryArray.Num() - 1);
 		Result.Add(AssetLibrary, MakeShared<FWwiseAssetLibraryInfo>(AssetLibrary->Info));

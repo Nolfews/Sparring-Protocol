@@ -18,9 +18,11 @@ Copyright (c) 2026 Audiokinetic Inc.
 #pragma once
 
 #include <shared_mutex>
+#include <atomic>
 
 #include "Wwise/WwiseStringConverter.h"
 #include "Wwise/WwiseDataStructure.h"
+#include "Wwise/WwiseProjectDatabaseCancellationToken.h"
 #include "Wwise/WwiseResourceLoader.h"
 #include "Wwise/WwiseProjectDatabaseModule.h"
 #include "Wwise/AdapterTypes/WwiseDataTypesAdapter.h"
@@ -210,7 +212,17 @@ public:
 	virtual ~FWwiseProjectDatabase() {}
 
 	virtual void UpdateDataStructure(
-		const WwiseDBGuid* InBasePlatformGuid = &BasePlatformGuid) {}
+		const WwiseDBGuid* InBasePlatformGuid = &BasePlatformGuid,
+		FWwiseProjectDatabaseCancellationToken InToken = {}) {}
+
+	/** Bumps the data-structure update generation and returns the new value.
+	 *  Call on the requesting thread before dispatching an async update, so ordering
+	 *  between competing requests is deterministic. Default base impl: no-op. */
+	virtual uint32 BumpUpdateGeneration() { return 0; }
+
+	/** Stable pointer to the update-generation counter, polled by an in-flight build to
+	 *  detect if it has been cancelled. Null means cancellation is unsupported. */
+	virtual const std::atomic<uint32>* GetUpdateGenerationToken() const { return nullptr; }
 
 	virtual void PrepareProjectDatabaseForPlatform(FWwiseResourceLoaderPtr&& InResourceLoader) {}
 	virtual FWwiseResourceLoaderPtr GetResourceLoader() { return nullptr; }
@@ -218,7 +230,7 @@ public:
 
 	FWwiseSharedLanguageId GetCurrentLanguage() const;
 	FWwiseSharedPlatformId GetCurrentPlatform() const;
-	virtual bool IsProjectDatabaseParsed() const { return bIsDatabaseParsed; };
+	virtual bool IsProjectDatabaseParsed() const { return bIsDatabaseParsed.load(std::memory_order_relaxed); };
 
 	/**
 	 * Sets the path where the Generated SoundBanks are located, relative to the Unreal Content folder.
@@ -235,7 +247,7 @@ public:
 protected:
 	/**
 	 * This is called by Instantiate when a new Project Database is instantiated for staging purposes.
-	 * 
+	 *
 	 * @param DefaultProjectDatabase The original Project Database
 	 */
 	virtual void InitForStaging(const FWwiseProjectDatabase& DefaultProjectDatabase);
@@ -266,7 +278,7 @@ protected:
 
 	bool DisableDefaultPlatforms() const;
 	
-	bool bIsDatabaseParsed = false;
+	std::atomic<bool> bIsDatabaseParsed{ false };
 	FDirectoryPath GeneratedSoundBanksPath;
 };
 

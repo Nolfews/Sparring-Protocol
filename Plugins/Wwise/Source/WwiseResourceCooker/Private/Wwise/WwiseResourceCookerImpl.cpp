@@ -310,7 +310,7 @@ void FWwiseResourceCookerImpl::PreCacheAssetLibraries(const IWwiseResourceCooker
 
 void FWwiseResourceCookerImpl::PreCacheAssetLibraryInfo(FCookedAssetLibraryFiles& OutFiles, UObject* Owner, const FWwiseAssetLibraryInfo& AssetLibraryInfo)
 {
-	UE_LOG(LogWwiseResourceCooker, Display, TEXT("FWwiseResourceCookerImpl::PreCacheAssetLibraryInfo(%s): Pre-caching %d assets."), *Owner->GetName(), (int)AssetLibraryInfo.FilteredAssets.Num());
+	UE_LOG(LogWwiseResourceCooker, Verbose, TEXT("FWwiseResourceCookerImpl::PreCacheAssetLibraryInfo(%s): Pre-caching %d assets."), *Owner->GetName(), (int)AssetLibraryInfo.FilteredAssets.Num());
 	for (const auto& AssetLibraryRef : AssetLibraryInfo.FilteredAssets)
 	{
 		PreCacheAssetLibraryRef(OutFiles, Owner, AssetLibraryRef);

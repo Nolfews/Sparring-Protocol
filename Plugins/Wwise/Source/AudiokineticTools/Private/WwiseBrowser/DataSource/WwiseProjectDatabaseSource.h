@@ -20,6 +20,7 @@ Copyright (c) 2026 Audiokinetic Inc.
 #include "IWwiseBrowserDataSource.h"
 #include "Misc/TextFilter.h"
 #include "Wwise/Ref/WwiseRefCollections.h"
+#include "WwiseRebuildCancellationToken.h"
 
 struct WwiseMetadataBasicReference;
 
@@ -31,11 +32,22 @@ struct WwiseItemTreePath
 	FString ItemName;
 };
 
+struct FWwiseTreeBuildContext
+{
+	TArray<FWwiseTreeItemPtr>& RootItems;
+	TMap<FGuid, FWwiseTreeItemPtr>& AllValidTreeItemsByGuid;
+	TMultiMap<uint32, FWwiseTreeItemPtr>& AllValidTreeItemsByShortId;
+	TMultiMap<FString, FWwiseTreeItemPtr>& AllValidTreeItemsByName;
+	TMap<FString, FWwiseTreeItemPtr>& NodesByPath;
+};
+
 class FWwiseProjectDatabaseDataSource : IWwiseBrowserDataSource
 {
 public:
 	DECLARE_DELEGATE(FOnWwiseProjectDatasbaseDataSourceRefreshed)
+	DECLARE_DELEGATE(FOnWwiseProjectDatabaseUpdatedExternally)
 
+	FWwiseProjectDatabaseDataSource();
 	virtual ~FWwiseProjectDatabaseDataSource() override;
 
 	FText GetProjectName();
@@ -44,6 +56,10 @@ public:
 
 	virtual bool Init() override;
 	virtual bool ConstructTree(bool bShouldRefresh) override;
+	void SetRebuildCancellation(FWwiseRebuildCancellationToken InCancelToken)
+	{
+		CancelToken = InCancelToken;
+	}
 	virtual FWwiseTreeItemPtr ConstructTreeRoot(EWwiseItemType Type) override;
 	virtual int32 LoadChildren(const FGuid& InParentId, const FString& InParentPath, TArray<FWwiseTreeItemPtr>& OutChildren) override;
 	virtual int32 LoadChildren(FWwiseTreeItemPtr InParentItem) override;
@@ -55,27 +71,11 @@ public:
 	FWwiseTreeItemPtr FindItem(const FWwiseTreeItemPtr InItem);
 
 	FOnWwiseProjectDatasbaseDataSourceRefreshed ProjectDatabaseDataSourceRefreshed;
+	FOnWwiseProjectDatabaseUpdatedExternally ProjectDatabaseUpdatedExternally;
 
 private:
 
-	void BuildEvents(const WwiseEventGlobalIdsMap& Events);
-	void BuildDialogueEvents(const WwiseDialogueEventGlobalIdsMap& DialogueEvents);
-	void BuildBusses(const WwiseBusGlobalIdsMap& Busses);
-	void BuildAuxBusses(const WwiseAuxBusGlobalIdsMap& AuxBusses);
-	void BuildAcousticTextures(const WwiseAcousticTextureGlobalIdsMap& AcousticTextures);
-	void BuildAudioDevices(const WwiseAudioDeviceGlobalIdsMap& AudioDevices);
-	void BuildStateGroups(const WwiseStateGroupGlobalIdsMap& StateGroups);
-	void BuildStates(const WwiseStateGlobalIdsMap& States);
-	void BuildSwitchGroups(const WwiseSwitchGroupGlobalIdsMap& SwitchGroups);
-	void BuildSwitches(const WwiseSwitchGlobalIdsMap& Switches);
-	void BuildGameParameters(const WwiseGameParameterGlobalIdsMap& GameParameters);
-	void BuildTriggers(const WwiseTriggerGlobalIdsMap& Triggers);
-	void BuildEffectShareSets(const WwisePluginShareSetGlobalIdsMap& EffectShareSets);
 	bool ParseTreePath(const FString& ObjectPath, WwiseItemTreePath& OutItemPath);
-
-	bool BuildFolderHierarchy(const WwiseMetadataBasicReference& WwiseItem, EWwiseItemType ItemType,
-		const FWwiseTreeItemPtr
-		CurrentRootFolder, uint32 GroupId = 0);
 
 	void CopyTree(FWwiseTreeItemPtr SourceTreeItem, FWwiseTreeItemPtr DestTreeItem);
 
@@ -83,18 +83,45 @@ private:
 
 	bool IsContainer(EWwiseItemType ItemType) const;
 	
-	/** Root items, one for each type of Wwise object */
-	FCriticalSection RootItemsLock;
-	TArray< FWwiseTreeItemPtr > RootItems;
-
-	// Map of all tree items
-	TMap<FGuid, FWwiseTreeItemPtr> AllValidTreeItemsByGuid;
-
-	// Container paths along the Browser Tree
-	TMap<FString, FWwiseTreeItemPtr> NodesByPath;
+	bool IsRebuildCancelled() const
+	{
+		return CancelToken.IsCancelled();
+	}
+	static constexpr int32 RebuildCancellationCheckInterval = 100;
+	FWwiseRebuildCancellationToken CancelToken;
 
 	// Allows some optimization if we have already applied a search
 	FString OldFilterText;
 
 	FDelegateHandle OnDatabaseUpdateCompleteHandle;
+
+protected:
+	FCriticalSection TreeDataLock;
+
+	/** Root items, one for each type of Wwise object */
+	TArray< FWwiseTreeItemPtr > RootItems;
+
+	// Container paths along the Browser Tree
+	TMap<FString, FWwiseTreeItemPtr> NodesByPath;
+
+	// Map of all tree items
+	TMap<FGuid, FWwiseTreeItemPtr> AllValidTreeItemsByGuid;
+	TMultiMap<uint32,  FWwiseTreeItemPtr> AllValidTreeItemsByShortId;
+	TMultiMap<FString, FWwiseTreeItemPtr> AllValidTreeItemsByName;
+
+	void BuildEvents(const WwiseEventGlobalIdsMap& Events, FWwiseTreeBuildContext& Ctx);
+	void BuildDialogueEvents(const WwiseDialogueEventGlobalIdsMap& DialogueEvents, FWwiseTreeBuildContext& Ctx);
+	void BuildBusses(const WwiseBusGlobalIdsMap& Busses, FWwiseTreeBuildContext& Ctx);
+	void BuildAuxBusses(const WwiseAuxBusGlobalIdsMap& AuxBusses, FWwiseTreeBuildContext& Ctx);
+	void BuildAcousticTextures(const WwiseAcousticTextureGlobalIdsMap& AcousticTextures, FWwiseTreeBuildContext& Ctx);
+	void BuildAudioDevices(const WwiseAudioDeviceGlobalIdsMap& AudioDevices, FWwiseTreeBuildContext& Ctx);
+	void BuildStateGroups(const WwiseStateGroupGlobalIdsMap& StateGroups, FWwiseTreeBuildContext& Ctx);
+	void BuildStates(const WwiseStateGlobalIdsMap& States, FWwiseTreeBuildContext& Ctx);
+	void BuildSwitchGroups(const WwiseSwitchGroupGlobalIdsMap& SwitchGroups, FWwiseTreeBuildContext& Ctx);
+	void BuildSwitches(const WwiseSwitchGlobalIdsMap& Switches, FWwiseTreeBuildContext& Ctx);
+	void BuildGameParameters(const WwiseGameParameterGlobalIdsMap& GameParameters, FWwiseTreeBuildContext& Ctx);
+	void BuildTriggers(const WwiseTriggerGlobalIdsMap& Triggers, FWwiseTreeBuildContext& Ctx);
+	void BuildEffectShareSets(const WwisePluginShareSetGlobalIdsMap& EffectShareSets, FWwiseTreeBuildContext& Ctx);
+
+	bool BuildFolderHierarchy(const WwiseMetadataBasicReference& WwiseItem, EWwiseItemType ItemType, const FWwiseTreeItemPtr CurrentRootFolder, FWwiseTreeBuildContext& Ctx, uint32 GroupId = 0);
 };

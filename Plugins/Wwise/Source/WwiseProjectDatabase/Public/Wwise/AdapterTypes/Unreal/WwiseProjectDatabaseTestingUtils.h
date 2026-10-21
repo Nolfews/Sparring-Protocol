@@ -29,6 +29,7 @@ Copyright (c) 2026 Audiokinetic Inc.
 #define PROJECT_DATABASE_TEST_CASE(PrettyName, tags) PROJECT_DATABASE_TEST_CASE_2(WWISE_TEST_CASE_PROJECT_DATABASE_NAME_2(WwiseProjectDatabaseTests_, __COUNTER__, __LINE__), PrettyName)
 #endif
 
+#if WWISE_UNIT_TESTS
 namespace WwiseProjectDatabaseLoggingUtils
 {
 	inline void ResetErrors(){}
@@ -40,3 +41,4 @@ namespace WwiseProjectDatabaseLoggingUtils
 		FAutomationTestFramework::Get().GetCurrentTest()->AddExpectedError(Message, EAutomationExpectedErrorFlags::Contains, occurences);
 	}
 }
+#endif // WWISE_UNIT_TESTS

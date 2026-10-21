@@ -21,6 +21,7 @@ Copyright (c) 2026 Audiokinetic Inc.
 #include "WwiseUEFeatures.h"
 #include "Modules/ModuleManager.h"
 #include "Containers/Ticker.h"
+#include "Templates/SharedPointer.h"
 #include <atomic>
 
 /**
@@ -67,6 +68,8 @@ public:
 	/** Counter for tracking active async database operations */
 	static std::atomic<int32> ActiveDatabaseOperations;
 
+	TSharedRef<std::atomic<bool>, ESPMode::ThreadSafe> IsAliveRef{ new std::atomic<bool>{ true } };
+
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
@@ -78,6 +81,7 @@ public:
 #if WITH_EDITORONLY_DATA
 	static void CreateResourceCookerForPlatform(const ITargetPlatform* TargetPlatform);
 	static void ParseGeneratedSoundBankData();
+	static void ParseGeneratedSoundBankDataAsync(TFunction<void()> OnComplete = nullptr);
 #endif
 	FAkAudioDevice* AkAudioDevice;
 

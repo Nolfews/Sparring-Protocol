@@ -127,10 +127,7 @@ TSharedRef<SDockTab> FAudiokineticToolsModule::CreateWwiseBrowserTab(const FSpaw
 void FAudiokineticToolsModule::RefreshWwiseProject()
 {
 	SoundBanksDirectoryWatcher.ConditionalRestartWatchers();
-	if (auto* ProjectDatabase = FWwiseProjectDatabase::Get())
-	{
-		ProjectDatabase->UpdateDataStructure();
-	}
+	FAkAudioModule::ParseGeneratedSoundBankDataAsync();
 }
 
 void FAudiokineticToolsModule::OpenOnlineHelp()
@@ -611,8 +608,12 @@ void FAudiokineticToolsModule::OnAssetRegistryFilesLoaded()
 	AkSettings->InitReverbAssignmentTable();
 	AkSettings->EnsurePluginContentIsInAlwaysCook();
 
-	AkAcousticTextureParamLookup AcousticTextureParamLookup;
-	AcousticTextureParamLookup.UpdateParamsMap();
+	FWwiseProjectDatabase* ProjectDatabase = FWwiseProjectDatabase::Get();
+	if (ProjectDatabase && ProjectDatabase->IsProjectDatabaseParsed())
+	{
+		AkAcousticTextureParamLookup AcousticTextureParamLookup;
+		AcousticTextureParamLookup.UpdateParamsMap();
+	}
 
 	if (!IsRunningCommandlet() )
 	{
@@ -693,17 +694,15 @@ void FAudiokineticToolsModule::StartupModule()
 			RegisterPlatformSettings();
 			--ActiveAsyncOperations;
 
-			// Marshal back to game thread for the remaining of the initialization sequence
-			AsyncTask(ENamedThreads::GameThread, [this]()
+			FWwiseProjectDatabase* ProjectDatabase = FWwiseProjectDatabase::Get();
+			if (!IWwiseProjectDatabaseModule::ShouldInitializeProjectDatabase() || (ProjectDatabase && ProjectDatabase->IsProjectDatabaseParsed()))
 			{
-				if (bIsShuttingDown)
-				{
-					UE_LOG(LogAudiokineticTools, Log, TEXT("FAudiokineticToolsModule: Async initialization aborted - module is shutting down."));
-					return;
-				}
-				CompleteInitialization(); 
-			});
-			
+				CompleteInitializationOnGameThread();
+			}
+			else
+			{
+				OnDatabaseUpdateCompleteInitializationHandle = FWwiseProjectDatabaseDelegates::Get()->GetOnDatabaseUpdateCompletedDelegate().AddRaw(this, &FAudiokineticToolsModule::OnDatabaseParsedForCompleteInitialization);
+			}
 		});
 		break;
 	}
@@ -742,8 +741,13 @@ void FAudiokineticToolsModule::StartupModule()
 	}
 
 
-	//Project Database initial parse occurs before AudiokineticTools' Initialization. Call it here manually.
-	SetStaticPluginsInformation();
+	{
+		FWwiseProjectDatabase* ProjectDatabase = FWwiseProjectDatabase::Get();
+		if (ProjectDatabase && ProjectDatabase->IsProjectDatabaseParsed())
+		{
+			SetStaticPluginsInformation();
+		}
+	}
 	StaticPluginHandle = FWwiseProjectDatabaseDelegates::Get()->GetOnDatabaseUpdateCompletedDelegate().AddLambda(
 		[this]()
 		{
@@ -753,6 +757,30 @@ void FAudiokineticToolsModule::StartupModule()
 	);
 	
 	FEditorDelegates::BeginPIE.AddRaw(this, &FAudiokineticToolsModule::BeginPIE);
+}
+
+void FAudiokineticToolsModule::CompleteInitializationOnGameThread()
+{
+	AsyncTask(ENamedThreads::GameThread, [this]()
+	{
+		if (bIsShuttingDown)
+		{
+			UE_LOG(LogAudiokineticTools, Log, TEXT("FAudiokineticToolsModule: Async initialization aborted - module is shutting down."));
+			return;
+		}
+		CompleteInitialization();
+	});
+}
+
+void FAudiokineticToolsModule::OnDatabaseParsedForCompleteInitialization()
+{
+	if (FWwiseProjectDatabaseDelegates* Delegates = FWwiseProjectDatabaseDelegates::Get())
+	{
+		Delegates->GetOnDatabaseUpdateCompletedDelegate().Remove(OnDatabaseUpdateCompleteInitializationHandle);
+	}
+	OnDatabaseUpdateCompleteInitializationHandle.Reset();
+
+	CompleteInitializationOnGameThread();
 }
 
 void FAudiokineticToolsModule::CompleteInitialization()
@@ -767,7 +795,14 @@ void FAudiokineticToolsModule::CompleteInitialization()
 		.SetIcon(FSlateIcon(FWwisePluginStyle::Get()->GetWwisePluginStyleSetName(), FWwisePluginStyle::WwiseIconName));
 
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-	OnAssetRegistryFilesLoadedHandle = AssetRegistryModule.Get().OnFilesLoaded().AddRaw(this, &FAudiokineticToolsModule::OnAssetRegistryFilesLoaded);
+	if (AssetRegistryModule.Get().IsLoadingAssets())
+	{
+		OnAssetRegistryFilesLoadedHandle = AssetRegistryModule.Get().OnFilesLoaded().AddRaw(this, &FAudiokineticToolsModule::OnAssetRegistryFilesLoaded);
+	}
+	else
+	{
+		OnAssetRegistryFilesLoaded();
+	}
 
 	ISequencerModule& SequencerModule = FModuleManager::LoadModuleChecked<ISequencerModule>(TEXT("Sequencer"));
 	RTPCTrackEditorHandle = SequencerModule.RegisterTrackEditor(FOnCreateTrackEditor::CreateStatic(&FMovieSceneWwiseGameParameterTrackEditor::CreateTrackEditor));
@@ -863,7 +898,7 @@ void FAudiokineticToolsModule::OpenAssetReloadPopup()
 
 void FAudiokineticToolsModule::ParseGeneratedSoundBankData()
 {
-	FAkAudioModule::ParseGeneratedSoundBankData();
+	FAkAudioModule::ParseGeneratedSoundBankDataAsync();
 }
 
 void FAudiokineticToolsModule::ShutdownModule()
@@ -912,7 +947,27 @@ void FAudiokineticToolsModule::ShutdownModule()
 		}
 	}
 	LevelViewportToolbarBuildMenuExtenderAkHandle.Reset();
-	StaticPluginHandle.Reset();
+	if (StaticPluginHandle.IsValid())
+	{
+		if (FWwiseProjectDatabaseDelegates* Delegates = FWwiseProjectDatabaseDelegates::Get())
+		{
+			Delegates->GetOnDatabaseUpdateCompletedDelegate().Remove(StaticPluginHandle);
+		}
+		StaticPluginHandle.Reset();
+	}
+	if (OnTargetPlatformsForCurrentProjectChangedHandle.IsValid())
+	{
+		IProjectManager::Get().OnTargetPlatformsForCurrentProjectChanged().Remove(OnTargetPlatformsForCurrentProjectChangedHandle);
+		OnTargetPlatformsForCurrentProjectChangedHandle.Reset();
+	}
+	if (OnDatabaseUpdatePlatformSettingsHandle.IsValid())
+	{
+		if (FWwiseProjectDatabaseDelegates* Delegates = FWwiseProjectDatabaseDelegates::Get())
+		{
+			Delegates->GetOnDatabaseUpdateCompletedDelegate().Remove(OnDatabaseUpdatePlatformSettingsHandle);
+		}
+		OnDatabaseUpdatePlatformSettingsHandle.Reset();
+	}
 	UnregisterSettings();
 
 	if (GUnrealEd != NULL)
@@ -964,8 +1019,29 @@ void FAudiokineticToolsModule::ShutdownModule()
 
 	if (OnDatabaseUpdateTextureHandle.IsValid())
 	{
-		FWwiseProjectDatabaseDelegates::Get()->GetOnDatabaseUpdateCompletedDelegate().Remove(OnDatabaseUpdateTextureHandle);
+		if (FWwiseProjectDatabaseDelegates* Delegates = FWwiseProjectDatabaseDelegates::Get())
+		{
+			Delegates->GetOnDatabaseUpdateCompletedDelegate().Remove(OnDatabaseUpdateTextureHandle);
+		}
 		OnDatabaseUpdateTextureHandle.Reset();
+	}
+
+	if (OnDatabaseUpdateCompleteHandle.IsValid())
+	{
+		if (FWwiseProjectDatabaseDelegates* Delegates = FWwiseProjectDatabaseDelegates::Get())
+		{
+			Delegates->GetOnDatabaseUpdateCompletedDelegate().Remove(OnDatabaseUpdateCompleteHandle);
+		}
+		OnDatabaseUpdateCompleteHandle.Reset();
+	}
+
+	if (OnDatabaseUpdateCompleteInitializationHandle.IsValid())
+	{
+		if (FWwiseProjectDatabaseDelegates* Delegates = FWwiseProjectDatabaseDelegates::Get())
+		{
+			Delegates->GetOnDatabaseUpdateCompletedDelegate().Remove(OnDatabaseUpdateCompleteInitializationHandle);
+		}
+		OnDatabaseUpdateCompleteInitializationHandle.Reset();
 	}
 
 #if WITH_EDITOR
@@ -1024,10 +1100,15 @@ TMap<FString, SettingsRegistrationStruct> FAudiokineticToolsModule::GetCoreSetti
 	return CoreSettingsMap;
 }
 
-TMap<FString, SettingsRegistrationStruct>& FAudiokineticToolsModule::GetWwisePlatformNameToSettingsRegistrationMap()
+TMap<FString, SettingsRegistrationStruct> FAudiokineticToolsModule::WwisePlatformNameToWwiseSettingsRegistrationMap;
+bool FAudiokineticToolsModule::bPlatformSettingsPopulated = false;
+
+void FAudiokineticToolsModule::RefreshWwisePlatformNameToSettingsRegistrationMap()
 {
-	static TMap<FString, SettingsRegistrationStruct> WwisePlatformNameToWwiseSettingsRegistrationMap;
-	if (WwisePlatformNameToWwiseSettingsRegistrationMap.Num() == 0)
+	const FWwiseProjectDatabase* ProjectDatabase = FWwiseProjectDatabase::Get();
+	const bool bDatabaseReady = ProjectDatabase && ProjectDatabase->IsProjectDatabaseParsed();
+
+	if (WwisePlatformNameToWwiseSettingsRegistrationMap.Num() == 0 || (!bPlatformSettingsPopulated && bDatabaseReady))
 	{
 		WwisePlatformNameToWwiseSettingsRegistrationMap = GetCoreSettingsRegistrationMap();
 		for (const auto& AvailablePlatform : AkUnrealPlatformHelper::GetAllWwiseProjectPlatforms())
@@ -1052,8 +1133,8 @@ TMap<FString, SettingsRegistrationStruct>& FAudiokineticToolsModule::GetWwisePla
 				WwisePlatformNameToWwiseSettingsRegistrationMap.Add(*AvailablePlatform, RegisterPlatform);
 			}
 		}
+		bPlatformSettingsPopulated = bDatabaseReady;
 	}
-	return WwisePlatformNameToWwiseSettingsRegistrationMap;
 }
 
 void FAudiokineticToolsModule::RegisterCoreSettings()
@@ -1080,13 +1161,13 @@ void FAudiokineticToolsModule::RegisterPlatformSettings()
 	{
 		auto UpdatePlatformSettings = [SettingsModule, this]
 		{
-			auto SettingsRegistrationMap = GetWwisePlatformNameToSettingsRegistrationMap();
+			RefreshWwisePlatformNameToSettingsRegistrationMap();
 
 			TSet<FString> SettingsThatShouldBeRegistered = { FString("Integration"), FString("User") };
 
 			for (const auto& AvailablePlatform : AkUnrealPlatformHelper::GetAllWwiseProjectPlatforms())
 			{
-				if (SettingsRegistrationMap.Contains(AvailablePlatform))
+				if (WwisePlatformNameToWwiseSettingsRegistrationMap.Contains(AvailablePlatform))
 				{
 					SettingsThatShouldBeRegistered.Add(AvailablePlatform);
 				}
@@ -1095,7 +1176,7 @@ void FAudiokineticToolsModule::RegisterPlatformSettings()
 			auto SettingsToBeUnregistered = RegisteredSettingsNames.Difference(SettingsThatShouldBeRegistered);
 			for (const auto& SettingsName : SettingsToBeUnregistered)
 			{
-				SettingsRegistrationMap[SettingsName].Unregister(SettingsModule);
+				WwisePlatformNameToWwiseSettingsRegistrationMap[SettingsName].Unregister(SettingsModule);
 				RegisteredSettingsNames.Remove(SettingsName);
 			}
 
@@ -1105,7 +1186,7 @@ void FAudiokineticToolsModule::RegisterPlatformSettings()
 				if (RegisteredSettingsNames.Contains(SettingsName))
 					continue;
 
-				SettingsRegistrationMap[SettingsName].Register(SettingsModule);
+				WwisePlatformNameToWwiseSettingsRegistrationMap[SettingsName].Register(SettingsModule);
 				RegisteredSettingsNames.Add(SettingsName);
 			}
 		};
@@ -1113,7 +1194,15 @@ void FAudiokineticToolsModule::RegisterPlatformSettings()
 		UpdatePlatformSettings();
 
 		IProjectManager& ProjectManager = IProjectManager::Get();
-		ProjectManager.OnTargetPlatformsForCurrentProjectChanged().AddLambda(UpdatePlatformSettings);
+		OnTargetPlatformsForCurrentProjectChangedHandle = ProjectManager.OnTargetPlatformsForCurrentProjectChanged().AddLambda(UpdatePlatformSettings);
+
+		if (FWwiseProjectDatabase* ProjectDatabase = FWwiseProjectDatabase::Get())
+		{
+			if (!ProjectDatabase->IsProjectDatabaseParsed())
+			{
+				OnDatabaseUpdatePlatformSettingsHandle = FWwiseProjectDatabaseDelegates::Get()->GetOnDatabaseUpdateCompletedDelegate().AddLambda(UpdatePlatformSettings);
+			}
+		}
 	}
 }
 
@@ -1127,10 +1216,9 @@ void FAudiokineticToolsModule::UnregisterSettings()
 {
 	if (auto SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
-		auto SettingsRegistrationMap = GetWwisePlatformNameToSettingsRegistrationMap();
 		for (const auto& SettingsName : RegisteredSettingsNames)
 		{
-			SettingsRegistrationMap[SettingsName].Unregister(SettingsModule);
+			WwisePlatformNameToWwiseSettingsRegistrationMap[SettingsName].Unregister(SettingsModule);
 		}
 		RegisteredSettingsNames.Empty();
 	}

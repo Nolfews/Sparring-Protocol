@@ -603,7 +603,7 @@ void UNiagaraDataInterfaceWwiseEvent::SetGameParameter(FUnrealVectorVMContext& C
 			AudioData.AudioHandle = Handle;
 			AudioData.UpdateCallback = [Handle, GameParameterIndex, GameParameterValue](FWwiseEventInterface_InstanceData* InstanceData, FNiagaraSystemInstance*)
 			{
-				if (InstanceData->GameParameters.Num() > GameParameterIndex)
+				if (InstanceData->GameParameters.IsValidIndex(GameParameterIndex))
 				{
 					TWeakObjectPtr<UAkRtpc> GameParameter = InstanceData->GameParameters[GameParameterIndex];
 					TWeakObjectPtr<UAkComponent> AkComponent = InstanceData->PersistentComponents.FindRef(Handle);
