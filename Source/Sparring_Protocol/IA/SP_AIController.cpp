@@ -2,32 +2,59 @@
 
 
 #include "SP_AIController.h"
-#include "Kismet/GameplayStatics.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 
 ASP_AIController::ASP_AIController()
 {
     PrimaryActorTick.bCanEverTick = false;
+
+    UAIPerceptionComponent *Perception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
+    SetPerceptionComponent(*Perception);
+
+    SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
+	SightConfig->SightRadius = 1500.f;
+	SightConfig->LoseSightRadius = 1800.f;
+	SightConfig->PeripheralVisionAngleDegrees = 60.f;
+	SightConfig->SetMaxAge(5.f);
+	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
+	Perception->ConfigureSense(*SightConfig);
+	Perception->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
 void ASP_AIController::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (UAIPerceptionComponent* Perception = GetPerceptionComponent())
+    {
+        Perception->OnTargetPerceptionUpdated.AddDynamic(this, &ASP_AIController::HandleTargetPerceptionUpdated);
+    }
 }
 
-void ASP_AIController::UpdateTargetActor()
+void ASP_AIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
+    const APawn* SensedPawn = Cast<APawn>(Actor);
     UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
-    if (!BlackboardComponent)
+
+    if ((!SensedPawn || !BlackboardComponent) || !SensedPawn->IsPlayerControlled())
     {
         return;
     }
 
-    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-    UObject* CurrentTarget = BlackboardComponent->GetValueAsObject(FName("TargetActor"));
-    if (CurrentTarget != PlayerPawn)
+    if (Stimulus.WasSuccessfullySensed())
     {
-        BlackboardComponent->SetValueAsObject(FName("TargetActor"), PlayerPawn);
+        BlackboardComponent->SetValueAsObject(TargetActorKey, Actor);
+        BlackboardComponent->ClearValue(LastKnownLocationKey);
+    }
+    else
+    {
+        BlackboardComponent->ClearValue(TargetActorKey);
+        BlackboardComponent->SetValueAsVector(LastKnownLocationKey, Stimulus.StimulusLocation);
     }
 }
 
@@ -39,18 +66,4 @@ void ASP_AIController::OnPossess(APawn* InPawn)
     {
         RunBehaviorTree(BehaviorTreeAsset);
     }
-
-    UpdateTargetActor();
-    GetWorldTimerManager().SetTimer(
-        TargetUpdateTimerHandle,
-        this,
-        &ASP_AIController::UpdateTargetActor,
-        0.1f,
-        true);
-}
-
-void ASP_AIController::OnUnPossess()
-{
-    GetWorldTimerManager().ClearTimer(TargetUpdateTimerHandle);
-    Super::OnUnPossess();
 }
