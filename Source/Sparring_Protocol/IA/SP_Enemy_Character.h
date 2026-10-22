@@ -7,6 +7,7 @@
 #include "SP_Enemy_Character.generated.h"
 
 class USP_MovementPaceComponent;
+class USP_AttackComponent;
 
 UCLASS()
 class SPARRING_PROTOCOL_API ASP_Enemy_Character : public ACharacter
@@ -20,6 +21,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USP_MovementPaceComponent> MovementPace;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USP_AttackComponent> Attack;
 
 public:	
 	ASP_Enemy_Character();

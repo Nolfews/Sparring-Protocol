@@ -10,7 +10,7 @@ public class Sparring_Protocol : ModuleRules
 
 		PublicIncludePaths.Add(ModuleDirectory);
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "AIModule", "GameplayTasks"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "AIModule", "GameplayTasks", "AnimGraphRuntime" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

@@ -8,7 +8,9 @@
 
 ASP_AIController::ASP_AIController()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    // Must tick: AAIController::Tick updates the control rotation from the focus (where the AI looks,
+    // which also aims the sight cone and turns the body through bUseControllerDesiredRotation).
+    PrimaryActorTick.bCanEverTick = true;
 
     UAIPerceptionComponent *Perception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent"));
     SetPerceptionComponent(*Perception);
@@ -48,6 +50,7 @@ void ASP_AIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus 
 
     if (Stimulus.WasSuccessfullySensed())
     {
+        SetFocus(Actor);
         BlackboardComponent->SetValueAsObject(TargetActorKey, Actor);
         BlackboardComponent->ClearValue(LastKnownLocationKey);
     }
@@ -55,6 +58,7 @@ void ASP_AIController::HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus 
     {
         BlackboardComponent->ClearValue(TargetActorKey);
         BlackboardComponent->SetValueAsVector(LastKnownLocationKey, Stimulus.StimulusLocation);
+        ClearFocus(EAIFocusPriority::Gameplay);
     }
 }
 
