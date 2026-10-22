@@ -3,14 +3,23 @@
 
 #include "SP_Enemy_Character.h"
 #include "SP_AIController.h"
+#include "IA/Components/SP_MovementPaceComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 // Sets default values
 ASP_Enemy_Character::ASP_Enemy_Character()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	AIControllerClass = ASP_AIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	MovementPace = CreateDefaultSubobject<USP_MovementPaceComponent>(TEXT("MovementPace"));
+
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 360.f, 0.f);
+
+	BaseEyeHeight = 70.f;
 }
 
 // Called when the game starts or when spawned

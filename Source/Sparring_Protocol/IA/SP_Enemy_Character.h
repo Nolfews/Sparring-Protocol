@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "SP_Enemy_Character.generated.h"
 
+class USP_MovementPaceComponent;
+
 UCLASS()
 class SPARRING_PROTOCOL_API ASP_Enemy_Character : public ACharacter
 {
@@ -15,6 +17,9 @@ class SPARRING_PROTOCOL_API ASP_Enemy_Character : public ACharacter
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USP_MovementPaceComponent> MovementPace;
 
 public:	
 	ASP_Enemy_Character();
