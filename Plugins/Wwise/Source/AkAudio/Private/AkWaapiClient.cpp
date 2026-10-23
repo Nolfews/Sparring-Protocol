@@ -36,6 +36,8 @@ Copyright (c) 2026 Audiokinetic Inc.
 #include "Misc/ScopeLock.h"
 #include "Misc/CoreDelegates.h"
 
+#include <atomic>
+
 #if AK_SUPPORT_WAAPI
 #include "Wwise/API/WAAPI.h"
 
@@ -55,6 +57,48 @@ typedef AK::WwiseAuthoringAPI::JsonProvider JsonProvider;
 Statics and Globals
 ------------------------------------------------------------------------------------*/
 FAkWaapiClient* g_AkWaapiClient = nullptr;
+static std::atomic<bool> g_bSoundBankGenerationInProgress{ false };
+
+// Set for the duration of AkSoundBankGenerationManager::WAAPIGenerate() on the background
+// thread it runs on, so its own generationDone Subscribe/Unsubscribe calls aren't rejected
+// by the g_bSoundBankGenerationInProgress fast-path check below.
+static thread_local bool t_bAllowWaapiOnThisThreadDuringGeneration = false;
+
+class FScopedClientLockWithTimeout
+{
+public:
+	FScopedClientLockWithTimeout(FCriticalSection& InSection, int TimeoutMs)
+		: Section(InSection)
+	{
+		if (TimeoutMs < 0)
+		{
+			Section.Lock();
+			bLocked = true;
+			return;
+		}
+		const double StartSeconds = FPlatformTime::Seconds();
+		const double TimeoutSeconds = TimeoutMs / 1000.0;
+		while (!(bLocked = Section.TryLock()))
+		{
+			if (FPlatformTime::Seconds() - StartSeconds >= TimeoutSeconds)
+			{
+				break;
+			}
+			FPlatformProcess::Sleep(0.001f);
+		}
+	}
+	~FScopedClientLockWithTimeout()
+	{
+		if (bLocked)
+		{
+			Section.Unlock();
+		}
+	}
+	bool IsLocked() const { return bLocked; }
+private:
+	FCriticalSection& Section;
+	bool bLocked = false;
+};
 
 /*------------------------------------------------------------------------------------
 FAkWaapiClientConnectionHandler
@@ -535,6 +579,21 @@ bool FAkWaapiClient::IsProjectAvailable()
 #endif
 }
 
+void FAkWaapiClient::SetSoundBankGenerationInProgress(bool bInProgress)
+{
+	g_bSoundBankGenerationInProgress = bInProgress;
+}
+
+bool FAkWaapiClient::IsSoundBankGenerationInProgress()
+{
+	return g_bSoundBankGenerationInProgress;
+}
+
+void FAkWaapiClient::SetCurrentThreadAllowedDuringGeneration(bool bAllowed)
+{
+	t_bAllowWaapiOnThisThreadDuringGeneration = bAllowed;
+}
+
 void FAkWaapiClient::ConvertProjectPath(FString& Path)
 {
 #if PLATFORM_MAC
@@ -756,6 +815,10 @@ bool FAkWaapiClient::Subscribe(const char* in_uri, const FString& in_options, Wa
 		timeout = Settings->WaapiCallsTimeout;
 	}
 	std::string out_resultString("");
+	if (g_bSoundBankGenerationInProgress && !t_bAllowWaapiOnThisThreadDuringGeneration)
+	{
+		return false;
+	}
 	if (IsConnected())
 	{
 		if (!m_Impl->bIsConnectionClosing)
@@ -763,7 +826,11 @@ bool FAkWaapiClient::Subscribe(const char* in_uri, const FString& in_options, Wa
 			// Call for the AK WAAPI method using string params.
 			if (LIKELY(g_AkWaapiClient->m_Impl->m_Client))
 			{
-				FScopeLock Lock(&m_Impl->ClientSection);
+				FScopedClientLockWithTimeout Lock(m_Impl->ClientSection, timeout);
+				if (!Lock.IsLocked())
+				{
+					return false;
+				}
 				eResult = m_Impl->m_Client->Subscribe(in_uri, TCHAR_TO_UTF8(*in_options), &WampEventCallbacks, out_subscriptionId, out_resultString, timeout);
 			}
 			if (eResult)
@@ -825,7 +892,8 @@ bool FAkWaapiClient::Unsubscribe(const uint64_t& in_subscriptionId, FString& out
 	{
 		timeout = Settings->WaapiCallsTimeout;
 	}
-	if (IsConnected())
+	const bool bSkipDueToGeneration = g_bSoundBankGenerationInProgress && !t_bAllowWaapiOnThisThreadDuringGeneration;
+	if (!bSkipDueToGeneration && IsConnected())
 	{
 		if (!m_Impl->bIsConnectionClosing)
 		{
@@ -833,8 +901,11 @@ bool FAkWaapiClient::Unsubscribe(const uint64_t& in_subscriptionId, FString& out
 			// Call the AK WAAPI method.
 			if (LIKELY(g_AkWaapiClient->m_Impl->m_Client))
 			{
-				FScopeLock Lock(&m_Impl->ClientSection);
-				eResult = m_Impl->m_Client->Unsubscribe(in_subscriptionId, out_resultString, timeout);
+				FScopedClientLockWithTimeout Lock(m_Impl->ClientSection, timeout);
+				if (Lock.IsLocked())
+				{
+					eResult = m_Impl->m_Client->Unsubscribe(in_subscriptionId, out_resultString, timeout);
+				}
 			}
 			if (!eResult && !in_bSilenceLog)
 			{
@@ -847,7 +918,7 @@ bool FAkWaapiClient::Unsubscribe(const uint64_t& in_subscriptionId, FString& out
 			out_result = FString(UTF8_TO_TCHAR(out_resultString.c_str()));
 		}
 	}
-	else
+	else if (!bSkipDueToGeneration)
 	{
 		if (m_Impl && m_Impl->m_pConnectionHandler)
 		{
@@ -903,6 +974,10 @@ bool FAkWaapiClient::Call(const char* in_uri, const FString& in_args, const FStr
 {
 	bool eResult = false;
 #if AK_SUPPORT_WAAPI
+	if (g_bSoundBankGenerationInProgress && !t_bAllowWaapiOnThisThreadDuringGeneration)
+	{
+		return false;
+	}
 	if (IsConnected())
 	{
 		if (!m_Impl->bIsConnectionClosing)
@@ -911,7 +986,11 @@ bool FAkWaapiClient::Call(const char* in_uri, const FString& in_args, const FStr
 			// Call the AK WAAPI method.
 			if (LIKELY(g_AkWaapiClient->m_Impl->m_Client))
 			{
-				FScopeLock Lock(&m_Impl->ClientSection);
+				FScopedClientLockWithTimeout Lock(m_Impl->ClientSection, in_iTimeoutMs);
+				if (!Lock.IsLocked())
+				{
+					return false;
+				}
 				eResult = m_Impl->m_Client->Call(in_uri, TCHAR_TO_UTF8(*in_args), TCHAR_TO_UTF8(*in_options), out_resultString, in_iTimeoutMs);
 			}
 			if (!eResult && !silenceLog)

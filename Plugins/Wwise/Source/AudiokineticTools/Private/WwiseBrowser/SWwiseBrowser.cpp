@@ -230,10 +230,7 @@ SWwiseBrowser::SWwiseBrowser(): CommandList(MakeShared<FUICommandList>())
 
 	DataSource->WwiseBrowserDataSourceRefreshed.BindLambda([this]
 	{
-		AsyncTask(ENamedThreads::Type::GameThread, [this]
-		{
-			this->ConstructTree();
-		});
+		this->ConstructTree();
 	});
 
 	DataSource->WwiseSelectionChange.BindRaw(this, &SWwiseBrowser::UpdateWaapiSelection);

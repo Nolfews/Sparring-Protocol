@@ -31,6 +31,7 @@ Copyright (c) 2026 Audiokinetic Inc.
 #include "AkSpotReflector.h"
 #include "Components/BillboardComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Engine/Level.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -460,7 +461,14 @@ void UAkComponent::OnUnregister()
 	// shot sounds.
 	AActor* Owner = GetOwner();
 	UWorld* CurrentWorld = GetWorld();
-	if( !Owner || !CurrentWorld || (StopWhenOwnerDestroyed && Owner->IsActorBeingDestroyed()) || CurrentWorld->bIsTearingDown || (Owner->GetClass() == APlayerController::StaticClass() && CurrentWorld->WorldType == EWorldType::PIE))
+	const ULevel* OwnerLevel = Owner ? Owner->GetLevel() : nullptr;
+
+	const bool bOwnerLevelBeingRemoved = OwnerLevel && OwnerLevel->bIsBeingRemoved;
+	const bool bOwnerBeingDestroyed = StopWhenOwnerDestroyed && Owner && (Owner->IsActorBeingDestroyed() || bOwnerLevelBeingRemoved);
+	const bool bWorldTearingDown = CurrentWorld && CurrentWorld->bIsTearingDown;
+	const bool bOwnerIsPIEPlayerController = Owner && CurrentWorld && Owner->GetClass() == APlayerController::StaticClass() && CurrentWorld->WorldType == EWorldType::PIE;
+
+	if (!Owner || !CurrentWorld || bOwnerBeingDestroyed || bWorldTearingDown || bOwnerIsPIEPlayerController)
 	{
 		Stop();
 	}

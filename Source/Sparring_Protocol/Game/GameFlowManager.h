@@ -28,6 +28,7 @@ enum class EGameFlowState : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameFlowStateChanged, EGameFlowState, NewState, EGameFlowState, PreviousState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRunStarted);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStarted, int32, RoundNumber);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRoundEnded, int32, RoundNumber, bool, bPlayerWon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRunEnded, int32, RoundsWon);
@@ -100,6 +101,10 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
 	FOnRoundStarted OnRoundStarted;
+
+	/** Fired when a new run begins, before its first step. Use it to reset music, UI or enemy progression. */
+	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
+	FOnRunStarted OnRunStarted;
 
 	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
 	FOnRoundEnded OnRoundEnded;

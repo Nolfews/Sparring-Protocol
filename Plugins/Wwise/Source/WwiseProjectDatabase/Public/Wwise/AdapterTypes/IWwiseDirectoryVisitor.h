@@ -16,9 +16,11 @@ Copyright (c) 2026 Audiokinetic Inc.
 *******************************************************************************/
 
 #pragma once
+#include <atomic>
 #include <filesystem>
 
 #include "Wwise/WwiseGeneratedFiles.h"
+#include "Wwise/WwiseProjectDatabaseCancellationToken.h"
 
 inline WwiseDBString WwiseDBStringFromPath(const std::filesystem::path& InPath)
 {
@@ -35,7 +37,11 @@ class IWwiseDirectoryVisitor
 public:
 	Type* DirectoryVisitor;
 
-	IWwiseDirectoryVisitor(Type* DirectoryVisitor) : DirectoryVisitor(DirectoryVisitor){}
+	IWwiseDirectoryVisitor(Type* DirectoryVisitor,
+		FWwiseProjectDatabaseCancellationToken InToken = {})
+		: DirectoryVisitor(DirectoryVisitor)
+		, Token(InToken)
+	{}
 
 	bool IterateDirectory(const WwiseDBString& InPath, bool bIsRecursive = false)
 	{
@@ -48,6 +54,11 @@ public:
 		{
 			for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(*InPath))
 			{
+				if (IsCancelled())
+				{
+					bResult = false;
+					break;
+				}
 				if(!DirectoryVisitor->Visit(WwiseDBStringFromPath(dirEntry.path()), dirEntry.is_directory()))
 				{
 					bResult = false;
@@ -58,6 +69,11 @@ public:
 		{
 			for (const auto& dirEntry : std::filesystem::directory_iterator(*InPath))
 			{
+				if (IsCancelled())
+				{
+					bResult = false;
+					break;
+				}
 				if(!DirectoryVisitor->Visit(WwiseDBStringFromPath(dirEntry.path()), dirEntry.is_directory()))
 				{
 					bResult = false;
@@ -80,5 +96,13 @@ public:
 			return {};
 		}
 		return std::filesystem::last_write_time(*InPath);
+	}
+
+private:
+	FWwiseProjectDatabaseCancellationToken Token;
+
+	bool IsCancelled() const
+	{
+		return Token.IsCancelled();
 	}
 };
