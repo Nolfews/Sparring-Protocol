@@ -19,18 +19,23 @@ Copyright (c) 2026 Audiokinetic Inc.
 
 #include "Wwise/WwiseGeneratedFiles.h"
 
+#include <atomic>
+
 #include "Async/Future.h"
 #include "CoreTypes.h"
 #include "Containers/UnrealString.h"
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "Wwise/AdapterTypes/IWwiseDirectoryVisitor.h"
+#include "Wwise/WwiseProjectDatabaseCancellationToken.h"
 
 class WWISEPROJECTDATABASE_API WwiseDirectoryVisitor
 {
 	friend IWwiseDirectoryVisitor<WwiseDirectoryVisitor>;
 public:
-	WwiseDirectoryVisitor(const WwiseDBString* InPlatformName = nullptr) :
-		PlatformName(InPlatformName)
+	WwiseDirectoryVisitor(const WwiseDBString* InPlatformName = nullptr,
+		FWwiseProjectDatabaseCancellationToken InToken = {}) :
+		PlatformName(InPlatformName),
+		Token(InToken)
 	{}
 
 	WwiseGeneratedFiles& Get();
@@ -46,6 +51,7 @@ private:
 	WwiseDBArray<WwiseDBFuture<FPlatformRootDirectoryVisitor*>> Futures;
 
 	const WwiseDBString* PlatformName;
+	FWwiseProjectDatabaseCancellationToken Token;
 
 	class FSoundBankVisitor;
 	class FMediaVisitor;

@@ -56,7 +56,7 @@ public:
 
 	virtual bool CreateAssetLibraryRef(FWwiseAssetLibraryRef&, const WwiseAnyRef& SourceRef);
 
-	static void GetRelevantAssets(const TArray<FString>& PackagePaths, TArray<FAssetData>& RelevantAssets, const TArray<FString>& ExcludedPackagePaths = {});
+	static void GetRelevantAssets(const TArray<FString>& PackagePaths, TArray<FAssetData>& RelevantAssets, const TArray<FString>& ExcludedPackagePaths = {}, bool bIncludeOnlyOnDiskAssets = false);
 protected:
 	static FCriticalSection IsFilteringCrit;
 };

@@ -112,6 +112,7 @@ void AGameFlowManager::StartRun()
 	ArenaManager->ClearAllElements();
 	RoundsWon = 0;
 	CurrentRound = 0;
+	OnRunStarted.Broadcast();
 
 	if (!(bSkipTutorials || bCombatTutorialCompleted))
 	{

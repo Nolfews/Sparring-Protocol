@@ -15,6 +15,9 @@ in a written agreement between you and Audiokinetic Inc.
 Copyright (c) 2026 Audiokinetic Inc.
 *******************************************************************************/
 
+#include "Wwise/WwiseUnitTests.h"
+
+#if WWISE_UNIT_TESTS || defined(TESTING_WWISE_PROJECT_DATABASE)
 #ifdef TESTING_WWISE_PROJECT_DATABASE
 #include <catch2/catch.hpp>
 #include "WwiseProjectDatabase.h"
@@ -68,3 +71,5 @@ SCENARIO("Wwise::WwiseProjectDatabase::Logging")
         WwiseProjectDatabaseLoggingUtils::ParseErrors();
     }
 }
+
+#endif // WWISE_UNIT_TESTS

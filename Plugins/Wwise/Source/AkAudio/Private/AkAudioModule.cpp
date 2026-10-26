@@ -236,6 +236,7 @@ void FAkAudioModule::StartupModule()
 			{
 				if (AkSettings->AreSoundBanksGenerated())
 				{
+					FScopedSlowTask DbSlowTask(0, LOCTEXT("WwiseProjectDatabaseUpdateStartup", "Retrieving Wwise data structure..."));
 					ParseGeneratedSoundBankData();
 					InitializeAkAudioDevice();
 				}
@@ -248,32 +249,24 @@ void FAkAudioModule::StartupModule()
 	case EWwiseProjectDatabaseLoadMode::Asynchronous:
 	default:
 		UE_LOG(LogAkAudio, Log, TEXT("FAkAudioModule::StartupModule: Using asynchronous Project Database loading."));
-		Async(EAsyncExecution::ThreadPool, [this]()
+		if (const auto* AkSettings = GetDefault<UAkSettings>())
 		{
-			if (auto* AkSettings = GetDefault<UAkSettings>())
+			if (AkSettings->AreSoundBanksGenerated())
 			{
-				if (AkSettings->AreSoundBanksGenerated())
+				TSharedRef<std::atomic<bool>, ESPMode::ThreadSafe> AliveRef = IsAliveRef;
+				ParseGeneratedSoundBankDataAsync([this, AliveRef]()
 				{
-					++ActiveDatabaseOperations;
-					ParseGeneratedSoundBankData();
-					--ActiveDatabaseOperations;	
-
-					// Marshal back to game thread for the remaining of the initialization sequence
-					AsyncTask(ENamedThreads::GameThread, [this]()
+					if (!AliveRef->load(std::memory_order_seq_cst))
 					{
-						if (bIsShuttingDown)
-						{
-							UE_LOG(LogAkAudio, Log, TEXT("LogAkAudio: Async initialization aborted - module is shutting down."));
-							return;
-						}
-						InitializeAkAudioDevice();
+						return;
+					}
+					InitializeAkAudioDevice();
 #if !UE_SERVER
-						UpdateWwiseResourceCookerSettings();
+					UpdateWwiseResourceCookerSettings();
 #endif
-					});
-				}
+				});
 			}
-		});
+		}
 	}
 	
 	// Loading the File Handler Module, in case it loads a different module with UStructs, so it gets packaged (Ex.: Simple External Source Manager)
@@ -297,6 +290,7 @@ void FAkAudioModule::ShutdownModule()
 	UE_CLOG(AkAudioModuleInstance && AkAudioModuleInstance != this, LogAkAudio, Warning, TEXT("FAkAudioModule::ShutdownModule: Shutting down a different instance (%p) that was initially instantiated (%p)!"), this, AkAudioModuleInstance);
 
 	bIsShuttingDown = true;
+	IsAliveRef->store(false, std::memory_order_seq_cst);
 	
 	// Wait for any active database operations to complete to prevent use-after-free crashes
 	if (ActiveDatabaseOperations > 0)
@@ -535,6 +529,7 @@ void FAkAudioModule::CreateResourceCookerForPlatform(const ITargetPlatform* Targ
 		{
 			FARFilter Filter;
 			Filter.bRecursivePaths = true;
+			Filter.bIncludeOnlyOnDiskAssets = true;
 			Filter.ClassPaths.Add(UWwiseAssetLibraryGroup::StaticClass()->GetClassPathName());
 			AssetRegistryModule->Get().GetAssets(Filter, LibraryGroupAssets);
 		}
@@ -662,6 +657,52 @@ void FAkAudioModule::ParseGeneratedSoundBankData()
 	{
 		ProjectDatabase->UpdateDataStructure();
 	}
+}
+
+void FAkAudioModule::ParseGeneratedSoundBankDataAsync(TFunction<void()> OnComplete)
+{
+	SCOPED_AKAUDIO_EVENT(TEXT("ParseGeneratedSoundBankDataAsync"));
+
+	auto CallOnCompleteOnGameThread = [OnComplete]()
+	{
+		if (!OnComplete)
+		{
+			return;
+		}
+
+		AsyncTask(ENamedThreads::GameThread, [OnComplete]()
+		{
+			if (bIsShuttingDown)
+			{
+				UE_LOG(LogAkAudio, Log, TEXT("LogAkAudio: Async initialization aborted - module is shutting down."));
+				return;
+			}
+			OnComplete();
+		});
+	};
+
+	auto* ProjectDatabase = FWwiseProjectDatabase::Get();
+	if (UNLIKELY(!ProjectDatabase))
+	{
+		UE_LOG(LogAkAudio, Warning, TEXT("FAkAudioModule::ParseGeneratedSoundBankDataAsync : Could not get FWwiseProjectDatabase instance. Generated sound data will not be parsed."));
+		CallOnCompleteOnGameThread();
+		return;
+	}
+
+	const uint32 Generation = ProjectDatabase->BumpUpdateGeneration();
+	const FWwiseProjectDatabaseCancellationToken CancellationToken{ ProjectDatabase->GetUpdateGenerationToken(), Generation };
+
+	++ActiveDatabaseOperations;
+	Async(EAsyncExecution::ThreadPool, [ProjectDatabase, CancellationToken, CallOnCompleteOnGameThread]()
+	{
+		if (!bIsShuttingDown)
+		{
+			ProjectDatabase->UpdateDataStructure(&FWwiseProjectDatabase::BasePlatformGuid, CancellationToken);
+		}
+		--ActiveDatabaseOperations;
+
+		CallOnCompleteOnGameThread();
+	});
 }
 #endif
 

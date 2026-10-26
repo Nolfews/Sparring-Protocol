@@ -52,6 +52,7 @@ AkSoundBankGenerationManager::~AkSoundBankGenerationManager()
 void AkSoundBankGenerationManager::SetIsBuilding(bool bIsBuilding)
 {
 	bIsBuildingData = bIsBuilding;
+	FAkWaapiClient::SetSoundBankGenerationInProgress(bIsBuilding);
 }
 
 void AkSoundBankGenerationManager::Init()
@@ -327,6 +328,12 @@ bool AkSoundBankGenerationManager::RunWwiseConsole(const FString& WwiseConsoleCo
 #if AK_SUPPORT_WAAPI
 bool AkSoundBankGenerationManager::WAAPIGenerate()
 {
+	FAkWaapiClient::SetCurrentThreadAllowedDuringGeneration(true);
+	ON_SCOPE_EXIT
+	{
+		FAkWaapiClient::SetCurrentThreadAllowedDuringGeneration(false);
+	};
+
 	if (!SubscribeToGenerationDone())
 	{
 		return false;

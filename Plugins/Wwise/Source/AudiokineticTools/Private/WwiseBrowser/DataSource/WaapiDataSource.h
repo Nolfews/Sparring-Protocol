@@ -159,14 +159,17 @@ public :
 	FOnWaapiSelectionChange WwiseSelectionChange;
 	FOnWaapiSelectionChange WwiseExpansionChange;
 
-private:
-
-	/** Root items, one for each type of Wwise object */
+protected:
+	//Root items, one for each type of Wwise object
 	FCriticalSection WaapiRootItemsLock;
 	TArray< FWwiseTreeItemPtr > RootItems;
 
 	// Container paths along the Browser Tree
 	TMap<FString, FWwiseTreeItemPtr> NodesByPath;
+	
+	std::atomic<EWwiseConnectionStatus> CachedConnectionStatus { EWwiseConnectionStatus::WwiseNotOpen };
+
+private:
 
 	FDelegateHandle ProjectLoadedHandle;
 	FDelegateHandle ConnectionLostHandle;
@@ -210,9 +213,6 @@ private:
 		uint64 SelectionChanged = 0;
 		uint64 StructureChanged = 0;
 	} WaapiSubscriptionIds;
-
-	/** Cached connection status to avoid expensive WAAPI calls every frame */
-	std::atomic<EWwiseConnectionStatus> CachedConnectionStatus { EWwiseConnectionStatus::WwiseNotOpen };
 
 	/** Delegate handle for the editor tick callback */
 	FDelegateHandle ConnectionStatusTickHandle;

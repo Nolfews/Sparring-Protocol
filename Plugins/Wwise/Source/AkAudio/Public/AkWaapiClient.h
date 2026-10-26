@@ -224,6 +224,15 @@ public:
     static bool IsProjectAvailable();
     static void ConvertProjectPath(FString& Path);
 
+    /** Set by the SoundBank generation manager while a generation is in progress. */
+    static void SetSoundBankGenerationInProgress(bool bInProgress);
+    static bool IsSoundBankGenerationInProgress();
+
+    /** Called by the SoundBank generation manager to exempt its own thread from the
+    *  SoundBank-generation-in-progress fast-bail-out.
+    */
+    static void SetCurrentThreadAllowedDuringGeneration(bool bAllowed);
+
     /**
      *  Indicates that the connection to WAAPI should be stopped and shouldn't be reconnected.
      */
