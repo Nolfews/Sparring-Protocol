@@ -1039,8 +1039,8 @@ void UAkSettings::OnAssetRemoved(const struct FAssetData& AssetData)
 		if (auto physicalMaterial = Cast<UPhysicalMaterial>(AssetData.GetAsset()))
 		{
 			TWeakObjectPtr<UDataTable> GeometryTable = GeometrySurfacePropertiesTable.LoadSynchronous();
-			if (!GeometryTable.IsValid())
-		{
+			if (GeometryTable.IsValid())
+			{
 				GeometryTable->RemoveRow(FName(physicalMaterial->GetPathName()));
 			}
 		}

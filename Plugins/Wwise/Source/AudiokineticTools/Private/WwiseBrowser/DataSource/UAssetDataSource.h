@@ -61,6 +61,7 @@ struct UAssetDataSourceInformation
 
 class FUAssetDataSource
 {
+protected:
 	// UAssets that have a valid Guid that exists in the Project Database
 	TMap<FGuid, UAssetDataSourceInformation> UsedItems;
 	// UAssets with invalid Guid will use the ShortId to sync with the Project Database.
@@ -68,12 +69,14 @@ class FUAssetDataSource
 	// UAssets with invalid Guid and ShortId will use the AssetName to sync with the Project Database. Also includes "None" States.
 	TMap<FName, UAssetDataSourceInformation> UAssetWithoutShortId;
 
+private:
 	UAssetDataSourceInformation CreateUAssetInfo(const UAssetDataSourceId& Id, const FAssetData& Asset);
 
 	bool GuidExistsInProjectDatabase(const FGuid ItemId);
 
 public:
-	void ConstructItems();
+	virtual ~FUAssetDataSource() = default;
+	virtual void ConstructItems();
 	void GetAssetsInfo(FGuid ItemId, uint32 ShortId, FString Name, uint32 GroupId, EWwiseItemType& ItemType, FName& AssetName, TArray<FAssetData>& Assets);
 	void GetOrphanAssets(TArray<UAssetDataSourceInformation>& OrphanAssets) const;
 };

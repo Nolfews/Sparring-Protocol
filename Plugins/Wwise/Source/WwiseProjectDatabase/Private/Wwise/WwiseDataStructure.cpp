@@ -43,14 +43,14 @@ Copyright (c) 2026 Audiokinetic Inc.
 #include "Wwise/Metadata/WwiseMetadataSwitchGroup.h"
 #include "Wwise/Metadata/WwiseMetadataTrigger.h"
 
-WwiseDataStructure::WwiseDataStructure(const WwiseDBString& InDirectoryPath, const WwiseDBString* InPlatform)
+WwiseDataStructure::WwiseDataStructure(const WwiseDBString& InDirectoryPath, const WwiseDBString* InPlatform, FWwiseProjectDatabaseCancellationToken InToken)
 {
     if (InDirectoryPath.IsEmpty())
     {
         return;
     }
 
-    IWwiseDirectoryVisitor<WwiseDirectoryVisitor> DirectoryVisitor(new WwiseDirectoryVisitor(InPlatform));
+    IWwiseDirectoryVisitor<WwiseDirectoryVisitor> DirectoryVisitor(new WwiseDirectoryVisitor(InPlatform, InToken), InToken);
     DirectoryVisitor.IterateDirectory(WwiseDBString(*InDirectoryPath));
     auto Directory = DirectoryVisitor.Get();
     if (!Directory.IsValid())
@@ -100,14 +100,20 @@ WwiseDataStructure::WwiseDataStructure(const WwiseDBString& InDirectoryPath, con
     }
 
 
-    LoadDataStructure(std::move(Directory));
+    if (InToken.IsCancelled())
+    {
+        return;
+    }
+
+    LoadDataStructure(std::move(Directory), InToken);
 }
 
 WwiseDataStructure::~WwiseDataStructure()
 {
 }
 
-void WwiseDataStructure::LoadDataStructure(WwiseGeneratedFiles&& Directory)
+void WwiseDataStructure::LoadDataStructure(WwiseGeneratedFiles&& Directory,
+    FWwiseProjectDatabaseCancellationToken InToken)
 {
 	WWISE_DB_LOG(VeryVerbose, "Starting load task");
 
@@ -142,8 +148,12 @@ void WwiseDataStructure::LoadDataStructure(WwiseGeneratedFiles&& Directory)
         Platforms.Add(Pair.GetFirst(), WwisePlatformDataStructure());
     }
     // Create the file lists to be used in loading files per platform
-    WwiseParallelFor(Directory.Platforms, [this, &RootFuture, &Directory](const auto& Platform)
+    WwiseParallelFor(Directory.Platforms, [this, &RootFuture, &Directory, InToken](const auto& Platform)
     {
+        if (InToken.IsCancelled())
+        {
+            return;
+        }
         WwiseDBPair<const WwiseDBSharedPlatformId, WwiseGeneratedFiles::FPlatformFiles> Pair(Directory.Platforms(Platform));
         WWISE_DB_LOG(VeryVerbose, "Loading platform files: %s", *Pair.GetFirst().GetPlatformName());
         WwiseDBArray<WwiseDBString> FileList;
@@ -284,8 +294,10 @@ void WwiseDataStructure::LoadDataStructure(WwiseGeneratedFiles&& Directory)
     WWISE_DB_LOG(VeryVerbose, "Finalizing parsing root");
     if (auto* Result = RootFuture.Get())
     {
-        // Will move result. Must have all other Futures done
-        RootData = std::move(*Result);
+        if (!InToken.IsCancelled())
+        {
+            RootData = std::move(*Result);
+        }
         delete Result;
     }
 }

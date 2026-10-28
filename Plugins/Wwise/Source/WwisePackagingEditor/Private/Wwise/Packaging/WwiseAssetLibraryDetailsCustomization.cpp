@@ -701,6 +701,15 @@ void FWwiseAssetLibraryDetailsCustomization::RebuildFilteredAssets()
 			};
 
 			PinnedSelf->ReleaseWorkingThread();
+			if (!PinnedSelf->WeakDetailBuilder.IsValid())
+			{
+				AsyncTask(ENamedThreads::GameThread, [PinnedSelf]() mutable
+				{
+					PinnedSelf.Reset();
+				});
+
+				return;
+			}
 
 			if (bResult)
 			{
@@ -999,6 +1008,13 @@ void FWwiseAssetLibraryDetailsCustomization::ApplySearchAndSort()
 		});
 
 		PinnedSelf->ReleaseWorkingThread();
+		if (!PinnedSelf->WeakDetailBuilder.IsValid())
+		{
+			AsyncTask(ENamedThreads::GameThread, [PinnedSelf]() mutable
+			{
+				PinnedSelf.Reset();
+			});
+		}
 	});
 }
 

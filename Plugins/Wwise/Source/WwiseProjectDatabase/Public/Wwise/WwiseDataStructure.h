@@ -17,8 +17,11 @@ Copyright (c) 2026 Audiokinetic Inc.
 
 #pragma once
 
+#include <atomic>
+
 #include "Wwise/WwiseGeneratedFiles.h"
 #include "Wwise/Stats/ProjectDatabase.h"
+#include "Wwise/WwiseProjectDatabaseCancellationToken.h"
 #include "Wwise/WwiseSharedLanguageId.h"
 
 #include "Wwise/Info/WwiseObjectInfo.h"
@@ -331,7 +334,7 @@ struct WwiseDataStructure
 	WwiseDBMap<WwiseDBSharedPlatformId, WwisePlatformDataStructure> Platforms;
 
 	WwiseDataStructure() {}
-	WwiseDataStructure(const WwiseDBString& InDirectoryPath, const WwiseDBString* InPlatform = nullptr);
+	WwiseDataStructure(const WwiseDBString& InDirectoryPath, const WwiseDBString* InPlatform = nullptr, FWwiseProjectDatabaseCancellationToken InToken = {});
 	~WwiseDataStructure();
 
 	WwiseDataStructure& operator+=(WwiseDataStructure&& Rhs);
@@ -345,7 +348,7 @@ struct WwiseDataStructure
 private:
 	WwiseDataStructure(const WwiseDataStructure& other) = delete;
 	WwiseDataStructure& operator=(const WwiseDataStructure& other) = delete;
-	void LoadDataStructure(WwiseGeneratedFiles&& Directory);
+	void LoadDataStructure(WwiseGeneratedFiles&& Directory, FWwiseProjectDatabaseCancellationToken InToken = {});
 };
 
 

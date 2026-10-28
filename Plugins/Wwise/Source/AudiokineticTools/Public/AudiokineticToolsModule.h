@@ -180,13 +180,19 @@ public:
 
 private:
 	static TMap<FString, SettingsRegistrationStruct> GetCoreSettingsRegistrationMap();
-	static TMap<FString, SettingsRegistrationStruct>& GetWwisePlatformNameToSettingsRegistrationMap();
+
+	static void RefreshWwisePlatformNameToSettingsRegistrationMap();
+	static TMap<FString, SettingsRegistrationStruct> WwisePlatformNameToWwiseSettingsRegistrationMap;
+	static bool bPlatformSettingsPopulated;
+
 	TSet<FString> RegisteredSettingsNames;
 	void RegisterSettings();
 	void RegisterCoreSettings();
 	void RegisterPlatformSettings();
 	void UnregisterSettings();
 	void CompleteInitialization();
+	void CompleteInitializationOnGameThread();
+	void OnDatabaseParsedForCompleteInitialization();
 
 	/** Ak-specific viewport actions */
 	FUIAction ToggleVizRoomsPortalsAction;
@@ -209,6 +215,9 @@ private:
 	GeneratedSoundBanksDirectoryWatcher SoundBanksDirectoryWatcher;
 	FDelegateHandle OnDatabaseUpdateCompleteHandle;
 	FDelegateHandle OnDatabaseUpdateTextureHandle;
+	FDelegateHandle OnDatabaseUpdatePlatformSettingsHandle;
+	FDelegateHandle OnDatabaseUpdateCompleteInitializationHandle;
+	FDelegateHandle OnTargetPlatformsForCurrentProjectChangedHandle;
 
 	FReloadPopup ReloadPopup = FReloadPopup();
 	FGeneratedSoundBanksWarning GeneratedSoundBanksWarning = FGeneratedSoundBanksWarning();

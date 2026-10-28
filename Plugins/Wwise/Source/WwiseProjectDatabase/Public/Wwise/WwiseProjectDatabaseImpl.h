@@ -17,6 +17,8 @@ Copyright (c) 2026 Audiokinetic Inc.
 
 #pragma once
 
+#include <atomic>
+
 #include "Wwise/WwiseProjectDatabase.h"
 
 class FWwiseResourceLoader;
@@ -31,15 +33,28 @@ public:
 
 	FWwiseResourceLoaderPtr ResourceLoaderOverride;
 
-	void UpdateDataStructure(
-		const WwiseDBGuid* InBasePlatformGuid = &BasePlatformGuid) override;
+	void UpdateDataStructure(const WwiseDBGuid* InBasePlatformGuid = &BasePlatformGuid, FWwiseProjectDatabaseCancellationToken InToken = {}) override;
+
+	uint32 BumpUpdateGeneration() override
+	{
+		return UpdateGeneration.fetch_add(1, std::memory_order_relaxed) + 1;
+	}
+	const std::atomic<uint32>* GetUpdateGenerationToken() const override
+	{
+		return &UpdateGeneration;
+	}
 
 	void PrepareProjectDatabaseForPlatform(FWwiseResourceLoaderPtr&& InResourceLoader) override;
 	FWwiseResourceLoaderPtr GetResourceLoader() override;
 	const FWwiseResourceLoaderPtr GetResourceLoader() const override;
 
 protected:
-	bool bShouldBroadcast = true;
+	std::atomic<bool> bShouldBroadcast{ true };
+
+	std::atomic<uint32> UpdateGeneration{ 0 };
+
+	TSharedRef<std::atomic<bool>, ESPMode::ThreadSafe> IsAliveRef{ new std::atomic<bool>{ true } };
+
 	FSharedWwiseDataStructure LockedDataStructure;
 
 	/**

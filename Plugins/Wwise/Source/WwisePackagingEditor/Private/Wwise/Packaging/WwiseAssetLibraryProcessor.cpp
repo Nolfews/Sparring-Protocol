@@ -118,11 +118,12 @@ bool FWwiseAssetLibraryProcessor::FilterSoundBank(const WwiseRefSoundBank& Sound
 	return true;
 }
 
-void FWwiseAssetLibraryProcessor::GetRelevantAssets(const TArray<FString>& PackagePaths, TArray<FAssetData>& RelevantAssets, const TArray<FString>& ExcludedPackagePaths)
+void FWwiseAssetLibraryProcessor::GetRelevantAssets(const TArray<FString>& PackagePaths, TArray<FAssetData>& RelevantAssets, const TArray<FString>& ExcludedPackagePaths, bool bIncludeOnlyOnDiskAssets)
 {
 	RelevantAssets.Empty();
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
+	Filter.bIncludeOnlyOnDiskAssets = bIncludeOnlyOnDiskAssets;
 	Filter.TagsAndValues.Add("WwiseGuid");
 	for (auto& PackagePath : PackagePaths)
 	{

@@ -20,13 +20,17 @@ Copyright (c) 2026 Audiokinetic Inc.
 #include "CoreMinimal.h"
 #include "UAssetDataSource.h"
 
+#include "Async/Future.h"
 #include "WaapiDataSource.h"
 #include "../WwiseBrowserForwards.h"
+#include "WwiseBrowserRebuildCoordinator.h"
 #include "WwiseItemType.h"
 #include "WwiseProjectDatabaseSource.h"
 #include "WwiseBrowser/WwiseAssetDragDropOp.h"
+#include "Wwise/WwiseUnitTests.h"
 
 struct FWwiseTreeItem;
+struct FMergeContext;
 
 enum ESoundBankStatusFilter
 {
@@ -142,38 +146,70 @@ public:
 
 	void HandleFindWwiseItemInProjectExplorerCommandExecute(const TArray<FWwiseTreeItemPtr>& SelectedItems) const;
 
-	void CreateProjectDBItem(const FWwiseTreeItemPtr& TreeItemRootSoundBank, FWwiseTreeItemPtr& TreeItemRootDst);
-	void CreateWaapiExclusiveItem(const FWwiseTreeItemPtr& WaapiItem, FWwiseTreeItemPtr& TreeItemRootDst);
-	void CreateWaapiItem(const FWwiseTreeItemPtr& TreeItemRootWwise, FWwiseTreeItemPtr& TreeItemRootDst);
-	bool IsMoved(FWwiseTreeItemPtr CurrItem);
-private:
+	void CreateProjectDBItem(const FWwiseTreeItemPtr& TreeItemRootSoundBank, FWwiseTreeItemPtr& TreeItemRootDst, const FMergeContext& Ctx);
+	FWwiseTreeItemPtr CreateWaapiExclusiveItem(const FWwiseTreeItemPtr& WaapiItem, const FWwiseTreeItemPtr& TreeItemRootDst, const FMergeContext& Ctx);
+	void CreateWaapiItem(const FWwiseTreeItemPtr& TreeItemRootWwise, const FWwiseTreeItemPtr& TreeItemRootDst, const FMergeContext& Ctx);
+	bool IsMoved(FWwiseTreeItemPtr CurrItem, const FMergeContext& Ctx);
 
-	void MergeDataSources();
+protected:
+	bool MergeDataSources(bool bCheckCancellation = false, uint32 Generation = 0);
+	void RequestRebuild(bool bRebuildProjectDB, bool bRebuildWaapi);
+	
+	TUniquePtr<FWaapiDataSource> WaapiDataSource;
+	TUniquePtr<FWwiseProjectDatabaseDataSource> ProjectDBDataSource;
+	TUniquePtr<FUAssetDataSource> UAssetDataSource;
+	TArray< FWwiseTreeItemPtr > RootItemsUnfiltered;
+
+#if WWISE_UNIT_TESTS
+public:
+	// Allocates the sub-datasources without running their Init(), so a test
+	// subclass built with this constructor never touches WAAPI/AssetRegistry/GEditor.
+	enum class EForTesting { SkipInit };
+	explicit FWwiseBrowserDataSource(EForTesting);
+	
+	// Invoked once per EWwiseItemType processed inside MergeDataSources, right after that type's
+	// CreateUnifiedTree call. Lets tests inject a mid-loop cancellation deterministically.
+	TFunction<void(EWwiseItemType)> OnMergeTypeProcessed_ForTesting;
+	void CancelCurrentRebuild();
+
+	// Lets a test capture RebuildCoordinator's generation counter
+	uint32 GetCurrentGeneration() const;
+
+	// Fired once, at the end of the destructor's drain loop - after CancelCurrentRebuild() has
+	// bumped the generation and OutstandingWorkerTasks has just reached 0. Mainly for testing purposes.
+	TFunction<void(uint32 Generation, bool CurrentWorkerFutureIsReady)> OnTeardownDrained;
+
+#endif
+
+private:
 
 	bool bIsDirty = false;
 
 	float AssetUpdateTimer = 0.f;
 
 	const float AssetTimerRefresh = 0.1f;
-
+	
 	float WaapiRefreshTimer = 0.f;
 
 	const float WaapiRefreshDelay = 0.5f;
 
 	FDelegateHandle WaapiRefreshTickHandle;
 
-	TUniquePtr<FWaapiDataSource> WaapiDataSource;
-
-	TUniquePtr<FWwiseProjectDatabaseDataSource> ProjectDBDataSource;
-
-	TUniquePtr<FUAssetDataSource> UAssetDataSource;
+	FWwiseBrowserRebuildCoordinator RebuildCoordinator;
+	TFuture<void> CurrentWorkerFuture;
+	TSharedRef<std::atomic<bool>, ESPMode::ThreadSafe> IsAliveRef { new std::atomic{ true } };
+	void LaunchRebuildChain();
+	void FinishOrRelaunch(uint32 FinishedGeneration);
+	bool IsRebuildStale(uint32 Generation) const
+	{
+		return RebuildCoordinator.IsStale(Generation);
+	}
 
 	/** Root items, one for each type of Wwise object */
 	FCriticalSection RootItemsLock;
 	TArray< FWwiseTreeItemPtr > RootItems;
 
-	TArray< FWwiseTreeItemPtr > RootItemsUnfiltered;
-
+	FCriticalSection FilterTextLock;
 	TSharedPtr<StringFilter> CurrentFilterText;
 
 	FSoundBankStatusFilter SoundBankStatusFilter;
@@ -183,13 +219,14 @@ private:
 	FWwiseTypeFilter WwiseTypeFilter;
 
 	// Merges TreeItemRootSrc and TreeItemRootDst, with the resulting tree in TreeItemRootDst. New TreeItems will be created if they do not exist in TreeItemRootDst
-	void CreateUnifiedTree(const FWwiseTreeItemPtr& TreeItemRootSoundBank, const FWwiseTreeItemPtr& TreeItemRootWaapi, FWwiseTreeItemPtr& TreeItemRootDst);
+	void CreateUnifiedTree(const FWwiseTreeItemPtr& TreeItemRootSoundBank, const FWwiseTreeItemPtr& TreeItemRootWaapi, FWwiseTreeItemPtr& TreeItemRootDst, const FMergeContext& Ctx);
 
 	void OnWaapiDataSourceRefreshed();
-
+	
 	void OnWaapiRefreshTimerTick(float DeltaSeconds);
 
 	void OnProjectDBDataSourceRefreshed();
+	void OnProjectDatabaseUpdatedExternally();
 
 	void SetupAssetCallbacks();
 	void OnFilesFullyLoaded();

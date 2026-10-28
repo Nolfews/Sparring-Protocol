@@ -39,8 +39,10 @@ class WwiseDirectoryVisitor::FPlatformRootDirectoryVisitor : public WwisePlatfor
 {
 public:
 	FPlatformRootDirectoryVisitor(
-		const WwiseDBSharedPlatformId& InPlatform) :
-		Platform(InPlatform)
+		const WwiseDBSharedPlatformId& InPlatform,
+		FWwiseProjectDatabaseCancellationToken InToken = {}) :
+		Platform(InPlatform),
+		Token(InToken)
 	{}
 	bool Visit(const WwiseDBString& FilenameOrDirectory, bool bIsDirectory);
 	bool StartJobIfValid();
@@ -50,6 +52,8 @@ public:
 
 	WwiseGeneratedFiles::FPlatformFiles PlatformFiles;
 	WwiseDBArray<WwiseDBFuture<WwisePlatformVisitor*>> Futures;
+
+	FWwiseProjectDatabaseCancellationToken Token;
 };
 
 //
@@ -58,7 +62,8 @@ public:
 class WwiseDirectoryVisitor::FSoundBankVisitor : public WwisePlatformVisitor
 {
 public:
-	FSoundBankVisitor()
+	FSoundBankVisitor(FWwiseProjectDatabaseCancellationToken InToken = {})
+		: Token(InToken)
 	{
 	}
 
@@ -66,6 +71,8 @@ public:
 	WwiseGeneratedFiles::FPlatformFiles& Get() override;
 
 	WwiseGeneratedFiles::FPlatformFiles Result;
+
+	FWwiseProjectDatabaseCancellationToken Token;
 };
 
 //
@@ -74,7 +81,8 @@ public:
 class WwiseDirectoryVisitor::FMediaVisitor : public WwisePlatformVisitor
 {
 public:
-	FMediaVisitor()
+	FMediaVisitor(FWwiseProjectDatabaseCancellationToken InToken = {})
+		: Token(InToken)
 	{
 	}
 
@@ -82,6 +90,8 @@ public:
 	WwiseGeneratedFiles::FPlatformFiles& Get() override;
 
 	WwiseGeneratedFiles::FPlatformFiles Result;
+
+	FWwiseProjectDatabaseCancellationToken Token;
 };
 
 //
@@ -176,7 +186,7 @@ bool WwiseDirectoryVisitor::Visit(const WwiseDBString& FilenameOrDirectory, bool
 				Futures.Add(WwiseAsync([this, Platform, PlatformPath] {
 					WwiseDBSharedPlatformId PlatformRef;
 					PlatformRef.Platform = WwiseDBSharedPtr<WwiseDBPlatformId>(new WwiseDBPlatformId(Platform.GUID, *Platform.Name, *Platform.Path));
-					auto RootVisitor = IWwiseDirectoryVisitor<FPlatformRootDirectoryVisitor>(new FPlatformRootDirectoryVisitor(PlatformRef));
+					auto RootVisitor = IWwiseDirectoryVisitor<FPlatformRootDirectoryVisitor>(new FPlatformRootDirectoryVisitor(PlatformRef, Token), Token);
 					if (!RootVisitor.IterateDirectory(PlatformPath) ||
 						!RootVisitor.DirectoryVisitor->StartJobIfValid())
 					{
@@ -217,7 +227,7 @@ WwiseGeneratedFiles& WwiseDirectoryVisitor::Get()
 		if (Result)
 		{
 			auto& PlatformFiles = Result->Get();
-			if (PlatformFiles.IsValid())
+			if (!Token.IsCancelled() && PlatformFiles.IsValid())
 			{
 				GeneratedDirectory.Platforms.Add(Result->Platform, PlatformFiles);
 			}
@@ -332,7 +342,7 @@ bool WwiseDirectoryVisitor::FPlatformRootDirectoryVisitor::StartJobIfValid()
 		const auto& Elem = PlatformFiles.MediaDirectory;
 		Futures.Add(WwiseAsync([this, Elem] {
 			WWISE_DB_LOG(Verbose, "Visiting media directory: %s", *Elem);
-			auto MediaVisitor = IWwiseDirectoryVisitor<FMediaVisitor>(new FMediaVisitor());
+			auto MediaVisitor = IWwiseDirectoryVisitor<FMediaVisitor>(new FMediaVisitor(Token), Token);
 			MediaVisitor.IterateDirectory(Elem);
 			return (WwisePlatformVisitor*)MediaVisitor.DirectoryVisitor;
 		}));
@@ -341,7 +351,7 @@ bool WwiseDirectoryVisitor::FPlatformRootDirectoryVisitor::StartJobIfValid()
 	{
 		Futures.Add(WwiseAsync([this, Elem] {
 			WWISE_DB_LOG(Verbose, "Visiting auto SoundBank directory: %s", *Elem);
-			auto SoundBankVisitor = IWwiseDirectoryVisitor<FSoundBankVisitor>(new FSoundBankVisitor());
+			auto SoundBankVisitor = IWwiseDirectoryVisitor<FSoundBankVisitor>(new FSoundBankVisitor(Token), Token);
 			SoundBankVisitor.IterateDirectory(Elem);
 			return (WwisePlatformVisitor*)SoundBankVisitor.DirectoryVisitor;
 		}));
@@ -351,7 +361,7 @@ bool WwiseDirectoryVisitor::FPlatformRootDirectoryVisitor::StartJobIfValid()
 	{
 		Futures.Add(WwiseAsync([this, Elem] {
 			WWISE_DB_LOG(Verbose, "Visiting language directory: %s", *Elem);
-			auto SoundBankVisitor = IWwiseDirectoryVisitor<FSoundBankVisitor>(new FSoundBankVisitor());
+			auto SoundBankVisitor = IWwiseDirectoryVisitor<FSoundBankVisitor>(new FSoundBankVisitor(Token), Token);
 			SoundBankVisitor.IterateDirectory(Elem);
 			return (WwisePlatformVisitor*)SoundBankVisitor.DirectoryVisitor;
 		}));
@@ -367,7 +377,10 @@ WwiseGeneratedFiles::FPlatformFiles& WwiseDirectoryVisitor::FPlatformRootDirecto
 		auto Result = Future.Get();
 		if (Result)
 		{
-			PlatformFiles.Append(std::move(Result->Get()));
+			if (!Token.IsCancelled())
+			{
+				PlatformFiles.Append(std::move(Result->Get()));
+			}
 			delete Result;
 		}
 	}
@@ -399,7 +412,7 @@ bool WwiseDirectoryVisitor::FSoundBankVisitor::Visit(const WwiseDBString& Filena
 	{
 		WWISE_DB_LOG(VeryVerbose, "Iterating folder: %s", *RelativeFilename);
 		Result.DirectoriesToWatch.Add(RelativeFilename);
-		auto DirectoryVisitor = IWwiseDirectoryVisitor<FSoundBankVisitor>(this);
+		auto DirectoryVisitor = IWwiseDirectoryVisitor<FSoundBankVisitor>(this, Token);
 		DirectoryVisitor.IterateDirectory(FilenameOrDirectory);
 		return true;
 	}
@@ -451,7 +464,7 @@ bool WwiseDirectoryVisitor::FMediaVisitor::Visit(const WwiseDBString& FilenameOr
 	if (bIsDirectory)
 	{
 		Result.DirectoriesToWatch.Add(RelativeFilename);
-		auto MediaVisitor = IWwiseDirectoryVisitor<FMediaVisitor>(this);
+		auto MediaVisitor = IWwiseDirectoryVisitor<FMediaVisitor>(this, Token);
 		MediaVisitor.IterateDirectory(FilenameOrDirectory);
 		return true;
 	}
