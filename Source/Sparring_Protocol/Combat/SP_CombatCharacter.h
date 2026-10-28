@@ -43,6 +43,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Abilities")
 	void SetAllAbilitiesEnabled(bool bEnabled);
 
+	/** Full health, abilities enabled, movement back on (new round, new run). */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	virtual void Revive();
+
 protected:
 	virtual void BeginPlay() override;
 

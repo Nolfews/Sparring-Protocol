@@ -39,6 +39,19 @@ void ASP_CombatCharacter::SetAllAbilitiesEnabled(bool bEnabled)
 	}
 }
 
+void ASP_CombatCharacter::Revive()
+{
+	HealthComponent->ResetHealth();
+	SetAllAbilitiesEnabled(true);
+
+	// DisableMovement() set the mode to None on death.
+	UCharacterMovementComponent* Movement = GetCharacterMovement();
+	if (Movement && Movement->MovementMode == MOVE_None)
+	{
+		Movement->SetMovementMode(MOVE_Walking);
+	}
+}
+
 void ASP_CombatCharacter::HandleDeath(AActor* Killer)
 {
 	SetAllAbilitiesEnabled(false);

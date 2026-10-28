@@ -30,6 +30,8 @@ public:
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
+	virtual void Revive() override;
+
 	UCameraComponent* GetFirstPersonCamera() const { return FirstPersonCamera; }
 
 	/** Added to the player when he takes control (IMC_Default, IMC_MouseLook, IMC_Weapons...). */

@@ -143,6 +143,16 @@ void ASP_PlayerCharacter::Tick(float DeltaSeconds)
 	}
 }
 
+void ASP_PlayerCharacter::Revive()
+{
+	Super::Revive();
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		EnableInput(PlayerController);
+	}
+}
+
 void ASP_PlayerCharacter::HandleDeath(AActor* Killer)
 {
 	Super::HandleDeath(Killer);
