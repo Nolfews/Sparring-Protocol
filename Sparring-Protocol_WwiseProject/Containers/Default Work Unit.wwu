@@ -5,6 +5,7 @@
 			<ChildrenList>
 				<MusicPlaylistContainer Name="MX_Combat" ID="{A9A8E958-7F0F-4ECC-B89E-C97CDECD8BC9}" ShortID="935526084">
 					<PropertyList>
+						<Property Name="ListenerRelativeRouting" Type="bool" Value="False"/>
 						<Property Name="Tempo" Type="Real64" Value="165"/>
 					</PropertyList>
 					<ReferenceList>
