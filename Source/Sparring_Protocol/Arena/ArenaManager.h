@@ -11,6 +11,7 @@ class UStaticMeshComponent;
 class AArenaSpawnPoint;
 class UPlaceableDefinition;
 class APlaceableElement;
+class UMaterialInstanceDynamic;
 
 /**
  * Owns the arena grid and every placed element.
@@ -186,12 +187,18 @@ protected:
 private:
 	void RebuildGrid();
 	void UpdateFloor();
+	void UpdateFloorMaterial();
+	void SetFloorBuildMode(bool bBuildMode);
 	void MarkSpawnExclusionZones();
 	void DrawDebugGrid() const;
 	bool CanRunDebugAction() const;
 	bool IsBlockedByCharacter(const FIntVector& Cell, const FIntVector& Footprint) const;
 
 	FArenaGrid Grid;
+
+	/** Dynamic instance of the floor material, fed with the grid layout (see UpdateFloorMaterial). */
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> FloorMaterial;
 
 	bool bBuildPhaseActive = false;
 	int32 CurrentMaxAllowed = 0;

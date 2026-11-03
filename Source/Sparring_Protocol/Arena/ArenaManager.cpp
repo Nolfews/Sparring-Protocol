@@ -5,6 +5,7 @@
 #include "Placement/PlaceableDefinition.h"
 #include "Placement/PlaceableElement.h"
 #include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Engine.h"
 #include "UObject/ConstructorHelpers.h"
@@ -108,6 +109,48 @@ void AArenaManager::UpdateFloor()
 
 	FloorMesh->SetRelativeLocation(FVector(0.f, 0.f, -FloorThickness * 0.5f));
 	FloorMesh->SetRelativeScale3D(FVector(Width / 100.f, Depth / 100.f, FloorThickness / 100.f));
+
+	UpdateFloorMaterial();
+}
+
+void AArenaManager::UpdateFloorMaterial()
+{
+	if (!FloorMesh || !Rules)
+	{
+		return;
+	}
+
+	// Reuse the dynamic instance when there is one, otherwise create it from the material set on the component.
+	UMaterialInterface* Current = FloorMesh->GetMaterial(0);
+	if (!Current)
+	{
+		return;
+	}
+	UMaterialInstanceDynamic* Dynamic = Cast<UMaterialInstanceDynamic>(Current);
+	if (!Dynamic)
+	{
+		Dynamic = FloorMesh->CreateAndSetMaterialInstanceDynamic(0);
+	}
+	FloorMaterial = Dynamic;
+	if (!FloorMaterial)
+	{
+		return;
+	}
+
+	// Lets a floor material align itself with the real grid, whatever the rules asset says.
+	const FVector Origin = Grid.GetOrigin();
+	FloorMaterial->SetScalarParameterValue(TEXT("CellSize"), Rules->CellSize);
+	FloorMaterial->SetVectorParameterValue(TEXT("GridOrigin"), FLinearColor(Origin.X, Origin.Y, Origin.Z, 0.f));
+	FloorMaterial->SetVectorParameterValue(TEXT("GridSize"), FLinearColor(Rules->GridSizeX, Rules->GridSizeY, 0.f, 0.f));
+	FloorMaterial->SetScalarParameterValue(TEXT("BuildMode"), bBuildPhaseActive ? 1.f : 0.f);
+}
+
+void AArenaManager::SetFloorBuildMode(bool bBuildMode)
+{
+	if (FloorMaterial)
+	{
+		FloorMaterial->SetScalarParameterValue(TEXT("BuildMode"), bBuildMode ? 1.f : 0.f);
+	}
 }
 
 void AArenaManager::MarkSpawnExclusionZones()
@@ -177,6 +220,7 @@ int32 AArenaManager::BeginBuildPhase(int32 RoundsWon)
 
 	CurrentMaxAllowed = Rules->GetMaxAllowed(FMath::Max(RoundsWon, 0));
 	bBuildPhaseActive = true;
+	SetFloorBuildMode(true);
 
 	const int32 PlayerSlots = GetSlotsToPlace(EPlacementOwner::Player);
 	OnBuildPhaseStarted.Broadcast(PlayerSlots);
@@ -190,6 +234,7 @@ void AArenaManager::EndBuildPhase()
 		return;
 	}
 	bBuildPhaseActive = false;
+	SetFloorBuildMode(false);
 	OnBuildPhaseFinished.Broadcast();
 }
 
