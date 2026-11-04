@@ -64,6 +64,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Shoot|Events")
 	FSPOnShotTrace OnShotTrace;
 
+	/**
+	 * Fires one shot right now, with no fire-rate timer and no input. For the AI: its attack animation
+	 * calls this on the frame the shot should leave. Does nothing while the ability is disabled (dead...).
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Shoot")
+	void FireOnce();
+
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void ActivateAbility() override;
