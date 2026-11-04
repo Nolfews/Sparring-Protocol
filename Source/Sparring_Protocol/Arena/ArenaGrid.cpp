@@ -5,7 +5,10 @@ void FArenaGrid::Initialize(const FIntVector& InSize, float InCellSize, const FV
 	Size = FIntVector(FMath::Max(InSize.X, 0), FMath::Max(InSize.Y, 0), FMath::Max(InSize.Z, 0));
 	CellSize = FMath::Max(InCellSize, 1.f);
 	Origin = InOrigin;
-	Cells.Init(EArenaCellState::Free, Size.X * Size.Y * Size.Z);
+
+	const int32 NumCells = Size.X * Size.Y * Size.Z;
+	Cells.Init(EArenaCellState::Free, NumCells);
+	MovementBlocked.Init(0, NumCells);
 }
 
 bool FArenaGrid::IsInBounds(const FIntVector& Cell) const
@@ -25,6 +28,19 @@ void FArenaGrid::SetState(const FIntVector& Cell, EArenaCellState NewState)
 	if (IsInBounds(Cell))
 	{
 		Cells[ToIndex(Cell)] = NewState;
+	}
+}
+
+bool FArenaGrid::IsMovementBlocked(const FIntVector& Cell) const
+{
+	return !IsInBounds(Cell) || MovementBlocked[ToIndex(Cell)] != 0;
+}
+
+void FArenaGrid::SetMovementBlocked(const FIntVector& Cell, bool bBlocked)
+{
+	if (IsInBounds(Cell))
+	{
+		MovementBlocked[ToIndex(Cell)] = bBlocked ? 1 : 0;
 	}
 }
 
