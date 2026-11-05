@@ -25,7 +25,7 @@ bool USP_AttackComponent::StartAttack()
 	}
 
 	// 0 means the montage could not play (no matching Slot in the AnimGraph, wrong skeleton...).
-	if (Character->PlayAnimMontage(AttackMontage) <= 0.f)
+	if (Character->PlayAnimMontage(AttackMontage, AttackPlayRate) <= 0.f)
 	{
 		return false;
 	}

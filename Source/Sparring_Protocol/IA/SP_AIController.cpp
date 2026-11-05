@@ -4,6 +4,7 @@
 #include "SP_AIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "IA/Progression/SP_EnemyProgressionConfig.h"
 
 
 ASP_AIController::ASP_AIController()
@@ -69,5 +70,25 @@ void ASP_AIController::OnPossess(APawn* InPawn)
     if (BehaviorTreeAsset)
     {
         RunBehaviorTree(BehaviorTreeAsset);
+    }
+}
+
+void ASP_AIController::ApplyLevelData(const FSPEnemyLevelData& LevelData)
+{
+    if (SightConfig)
+    {
+        SightConfig->SightRadius = LevelData.SightRadius;
+        SightConfig->LoseSightRadius = LevelData.LoseSightRadius;
+
+        if (UAIPerceptionComponent* Perception = GetPerceptionComponent())
+        {
+            Perception->ConfigureSense(*SightConfig);
+        }
+    }
+
+    if (UBlackboardComponent* BlackboardComponent = GetBlackboardComponent())
+    {
+        BlackboardComponent->SetValueAsFloat(AttackCooldownKey, LevelData.AttackCooldown);
+        BlackboardComponent->SetValueAsBool(CanSearchKey, LevelData.bCanSearch);
     }
 }
