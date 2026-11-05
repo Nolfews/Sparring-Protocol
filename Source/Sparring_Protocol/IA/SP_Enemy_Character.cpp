@@ -7,6 +7,8 @@
 #include "IA/Components/SP_AttackComponent.h"
 #include "Abilities/SP_ShootComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "AIController.h"
+#include "BrainComponent.h"
 
 
 // Sets default values
@@ -45,6 +47,28 @@ void ASP_Enemy_Character::HandleAttackFired()
 	if (USP_ShootComponent* Shoot = FindComponentByClass<USP_ShootComponent>())
 	{
 		Shoot->FireOnce();
+	}
+}
+
+void ASP_Enemy_Character::HandleDeath(AActor* Killer)
+{
+	Super::HandleDeath(Killer);
+
+	if (Attack)
+	{
+		Attack->StopAttack();
+	}
+
+
+	if (AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		AIController->StopMovement();
+		AIController->ClearFocus(EAIFocusPriority::Gameplay);
+
+		if (UBrainComponent* Brain = AIController->GetBrainComponent())
+		{
+			Brain->StopLogic(TEXT("Enemy dead"));
+		}
 	}
 }
 

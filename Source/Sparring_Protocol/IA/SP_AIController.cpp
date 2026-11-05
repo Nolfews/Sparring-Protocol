@@ -16,8 +16,8 @@ ASP_AIController::ASP_AIController()
     SetPerceptionComponent(*Perception);
 
     SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
-	SightConfig->SightRadius = 1500.f;
-	SightConfig->LoseSightRadius = 1800.f;
+	SightConfig->SightRadius = 2000.f;
+	SightConfig->LoseSightRadius = 2400.f;
 	SightConfig->PeripheralVisionAngleDegrees = 60.f;
 	SightConfig->SetMaxAge(5.f);
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;

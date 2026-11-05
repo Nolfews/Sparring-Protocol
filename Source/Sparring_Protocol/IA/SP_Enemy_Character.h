@@ -22,6 +22,7 @@ class SPARRING_PROTOCOL_API ASP_Enemy_Character : public ASP_CombatCharacter
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void HandleDeath(AActor* Killer) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USP_MovementPaceComponent> MovementPace;
