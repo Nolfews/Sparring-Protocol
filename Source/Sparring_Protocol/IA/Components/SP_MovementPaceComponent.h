@@ -26,6 +26,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Movement")
 	ESP_MovementPace GetPace() const { return CurrentPace; }
 
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void SetSpeeds(float NewWalkSpeed, float NewRunSpeed);
+
 protected:
 	virtual void BeginPlay() override;
 

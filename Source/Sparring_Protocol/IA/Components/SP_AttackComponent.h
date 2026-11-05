@@ -28,6 +28,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Attack")
 	bool IsAttacking() const { return bIsAttacking; }
 
+	UFUNCTION(BlueprintCallable, Category = "Attack")
+	void SetAttackPlayRate(float NewPlayRate) { AttackPlayRate = FMath::Max(NewPlayRate, 0.1f); }
+
 	/** Called by the AttackFired AnimNotify. */
 	void NotifyAttackFired();
 
@@ -37,6 +40,9 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack", meta = (ClampMin = "0.1"))
+	float AttackPlayRate = 1.f;
 
 	/** Draws a line from the eyes when the attack lands, to check the notify timing. */
 	UPROPERTY(EditAnywhere, Category = "Attack|Debug")

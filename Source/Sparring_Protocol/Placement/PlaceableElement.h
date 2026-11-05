@@ -65,6 +65,22 @@ public:
 	/** Ages the element by one round. Returns true when it just ran out (the ArenaManager then removes it). */
 	bool AgeOneRound();
 
+	// ---- Health (damage from shots, explosions, the debug button) --------------
+
+	/**
+	 * Everything that damages actors the standard Unreal way ends up here
+	 * (UGameplayStatics::ApplyDamage / ApplyPointDamage / ApplyRadialDamage).
+	 * Does nothing for indestructible elements (MaxHealth = 0) or during a build phase.
+	 */
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintPure, Category = "Placeable|Health")
+	bool IsDestructible() const { return MaxHealth > 0.f; }
+
+	/** 1 = intact, 0 = destroyed. Always 1 for an indestructible element. */
+	UFUNCTION(BlueprintPure, Category = "Placeable|Health")
+	float GetHealthFraction() const;
+
 	/** Called by the ArenaManager when the element leaves the arena: disables it and plays the break effect. */
 	void Break();
 
@@ -82,6 +98,18 @@ protected:
 	/** Fired when the element breaks: spawn debris, particles and sound here (use "at location" nodes, this actor disappears soon). */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Placeable|Lifetime")
 	void OnBroken();
+
+	/** Fired on every hit that did damage: spawn sparks or debris at HitLocation, play an impact sound. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Placeable|Health")
+	void OnDamaged(float DamageTaken, float HealthFractionLeft, FVector HitLocation);
+
+	/** Damage is ignored while the player is building (no combat then). Turn off to test with the debug buttons. */
+	UPROPERTY(EditDefaultsOnly, Category = "Placeable|Health")
+	bool bIgnoreDamageDuringBuildPhase = true;
+
+	/** Prints each hit on screen (or why it was ignored), like the health component of the characters. */
+	UPROPERTY(EditDefaultsOnly, Category = "Placeable|Health")
+	bool bShowDebugMessages = true;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<USceneComponent> Root;
@@ -118,6 +146,7 @@ protected:
 private:
 	void ApplyCrack(float Amount);
 	void ApplyOwnerTint();
+	void ShowDebugMessage(const FString& Message, const FColor& Color) const;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UPlaceableDefinition> Definition;
@@ -133,6 +162,8 @@ private:
 	FVector WorldBoxSize = FVector(100.f);
 
 	int32 RoundsRemaining = 0;
+	float MaxHealth = 0.f;
+	float CurrentHealth = 0.f;
 	int32 TotalRounds = 0;
 	float CurrentCrack = 0.f;
 	float TargetCrack = 0.f;

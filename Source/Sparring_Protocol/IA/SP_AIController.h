@@ -11,6 +11,7 @@
 
 
 class UAISenseConfig_Sight;
+struct FSPEnemyLevelData;
 /**
  *
  */
@@ -22,6 +23,7 @@ class SPARRING_PROTOCOL_API ASP_AIController : public AAIController
 
 public:
 	ASP_AIController();
+	void ApplyLevelData(const FSPEnemyLevelData& LevelData);
 
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
@@ -39,6 +41,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
 	FName LastKnownLocationKey = TEXT("LastKnownLocation");
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
+	FName AttackCooldownKey = TEXT("AttackCooldown");
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
+	FName CanSearchKey = TEXT("bCanSearch");
 
 private:
 	UFUNCTION()
