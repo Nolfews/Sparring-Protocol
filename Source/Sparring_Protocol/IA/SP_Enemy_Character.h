@@ -8,6 +8,7 @@
 
 class USP_MovementPaceComponent;
 class USP_AttackComponent;
+class USP_EnemyProgressionComponent;
 
 /**
  * The enemy. Now built on ASP_CombatCharacter like the player: it gets a health component,
@@ -29,6 +30,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USP_AttackComponent> Attack;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USP_EnemyProgressionComponent> Progression;
 
 	/** The attack animation reached its AttackFired notify: the shoot ability (if any) fires a shot. */
 	UFUNCTION()

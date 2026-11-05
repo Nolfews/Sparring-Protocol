@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "BrainComponent.h"
+#include "IA/Progression/SP_EnemyProgressionComponent.h"
 
 
 // Sets default values
@@ -19,6 +20,7 @@ ASP_Enemy_Character::ASP_Enemy_Character()
 
 	MovementPace = CreateDefaultSubobject<USP_MovementPaceComponent>(TEXT("MovementPace"));
 	Attack = CreateDefaultSubobject<USP_AttackComponent>(TEXT("Attack"));
+	Progression = CreateDefaultSubobject<USP_EnemyProgressionComponent>(TEXT("Progression"));
 
 	// The body follows the controller rotation. The controller looks where the AI walks (move focus)
 	// or at its target (gameplay focus): this lets the enemy face the player while strafing.
