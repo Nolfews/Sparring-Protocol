@@ -40,13 +40,16 @@ protected:
 	FName TargetActorKey = TEXT("TargetActor");
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
-	FName LastKnownLocationKey = TEXT("LastKnownLocation");
+	FName LastKnownLocationKey = TEXT("LastKnowLocation");
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
 	FName AttackCooldownKey = TEXT("AttackCooldown");
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
 	FName CanSearchKey = TEXT("bCanSearch");
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
+	FName CanRunandShootKey = TEXT("bCanRunandShoot");
 
 private:
 	UFUNCTION()

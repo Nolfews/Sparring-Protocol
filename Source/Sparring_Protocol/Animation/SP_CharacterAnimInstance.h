@@ -6,6 +6,7 @@
 
 class ACharacter;
 class UCharacterMovementComponent;
+class USP_AttackComponent;
 
 /** Computes the locomotion variables read by an Animation Blueprint. Reads only, never decides. */
 UCLASS()
@@ -28,10 +29,21 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Locomotion")
 	bool bIsFalling = false;
 
+	/** 0 = upper body follows the locomotion, 1 = upper body aims. */
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	float AimAlpha = 0.f;
+
+	/** How fast the weapon goes up and down. */
+	UPROPERTY(EditDefaultsOnly, Category = "Attack", meta = (ClampMin = "0.1"))
+	float AimInterpSpeed = 12.f;
+
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<ACharacter> OwnerCharacter;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UCharacterMovementComponent> OwnerMovement;
+
+	UPROPERTY(Transient)
+	TObjectPtr<USP_AttackComponent> OwnerAttack;
 };

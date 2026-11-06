@@ -24,6 +24,7 @@ ASP_AIController::ASP_AIController()
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+    
 
 	Perception->ConfigureSense(*SightConfig);
 	Perception->SetDominantSense(SightConfig->GetSenseImplementation());
@@ -90,5 +91,6 @@ void ASP_AIController::ApplyLevelData(const FSPEnemyLevelData& LevelData)
     {
         BlackboardComponent->SetValueAsFloat(AttackCooldownKey, LevelData.AttackCooldown);
         BlackboardComponent->SetValueAsBool(CanSearchKey, LevelData.bCanSearch);
+        BlackboardComponent->SetValueAsBool(CanRunandShootKey, LevelData.bCanRunandShoot);
     }
 }

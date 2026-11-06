@@ -26,6 +26,7 @@ FSPEnemyLevelData USP_EnemyProgressionConfig::GetLevelData(int32 Level) const
         Data.AttackCooldown *= Unlock.AttackCooldownMultiplier;
         Data.AttackPlayRate *= Unlock.AttackPlayRateMultiplier;
         Data.bCanSearch = Data.bCanSearch || Unlock.bUnlockSearch;
+        Data.bCanRunandShoot = Data.bCanRunandShoot || Unlock.bUnlockRunandShoot;
     }
 
     Data.LoseSightRadius = Data.SightRadius + LoseSightMargin;

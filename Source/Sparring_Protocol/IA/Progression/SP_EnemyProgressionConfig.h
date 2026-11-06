@@ -55,6 +55,9 @@ struct FSPEnemyUnlock
     /** The enemy goes to the last known location of the player. */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour")
     bool bUnlockSearch = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour")
+    bool bUnlockRunandShoot = false;
 };
 
 /** Every final value of one level, once the stats and the reached tiers are combined. */
@@ -92,6 +95,9 @@ struct FSPEnemyLevelData
 
     UPROPERTY(BlueprintReadOnly, Category = "Level")
     bool bCanSearch = false;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Level")
+    bool bCanRunandShoot = false;
 };
 
 /** Data Asset holding how the enemy grows each round. */
