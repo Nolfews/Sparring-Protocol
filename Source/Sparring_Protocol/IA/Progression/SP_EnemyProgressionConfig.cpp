@@ -27,6 +27,8 @@ FSPEnemyLevelData USP_EnemyProgressionConfig::GetLevelData(int32 Level) const
         Data.AttackPlayRate *= Unlock.AttackPlayRateMultiplier;
         Data.bCanSearch = Data.bCanSearch || Unlock.bUnlockSearch;
         Data.bCanRunandShoot = Data.bCanRunandShoot || Unlock.bUnlockRunandShoot;
+        Data.MaxJumps = FMath::Max(Data.MaxJumps, Unlock.UnlockedJumps);
+        Data.bCanDash = Data.bCanDash || Unlock.bUnlockDash;
     }
 
     Data.LoseSightRadius = Data.SightRadius + LoseSightMargin;

@@ -58,6 +58,12 @@ struct FSPEnemyUnlock
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour")
     bool bUnlockRunandShoot = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour", meta = (ClampMin = "0"))
+    int32 UnlockedJumps = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour")
+    bool bUnlockDash = false;
 };
 
 /** Every final value of one level, once the stats and the reached tiers are combined. */
@@ -98,6 +104,12 @@ struct FSPEnemyLevelData
 
     UPROPERTY(BlueprintReadOnly, Category = "Level")
     bool bCanRunandShoot = false;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Level")
+    int32 MaxJumps = 0;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Level")
+    bool bCanDash = false;
 };
 
 /** Data Asset holding how the enemy grows each round. */

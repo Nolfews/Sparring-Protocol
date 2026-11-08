@@ -9,6 +9,7 @@
 #include "IA/Components/SP_AttackComponent.h"
 #include "IA/Components/SP_MovementPaceComponent.h"
 #include "IA/SP_AIController.h"
+#include "IA/Components/SP_EnemyMobilityComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogEnemyProgression, Log, All);
 
@@ -94,6 +95,11 @@ void USP_EnemyProgressionComponent::ApplyLevel(int32 NewLevel)
         AttackComp->SetAttackCooldown(Data.AttackCooldown);
     }
 
+     if (USP_EnemyMobilityComponent* MobilityComp = GetOwner()->FindComponentByClass<USP_EnemyMobilityComponent>())
+    {
+        MobilityComp->SetCapabilities(Data.MaxJumps, Data.bCanDash);
+    }
+
     // The brain.
     if (const APawn* OwnerPawn = Cast<APawn>(GetOwner()))
     {
@@ -106,10 +112,12 @@ void USP_EnemyProgressionComponent::ApplyLevel(int32 NewLevel)
     if (bShowDebugMessages && GEngine)
     {
         GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Cyan,
-            FString::Printf(TEXT("ENEMY LEVEL %d | %.0f HP | %.1f damage | %.0f/%.0f speed | %.0f sight | %.1f spread | %.2f s | search %s | run&shoot %s"),
+            FString::Printf(TEXT("ENEMY LEVEL %d | %.0f HP | %.1f damage | %.0f/%.0f speed | %.0f sight | %.1f spread | %.2f s | search %s | run&shoot %s | jumps %d | dash %s"),
                 CurrentLevel, Data.MaxHealth, Data.Damage, Data.WalkSpeed, Data.RunSpeed,
                 Data.SightRadius, Data.SpreadAngle, Data.AttackCooldown,
                 Data.bCanSearch ? TEXT("on") : TEXT("off"),
-                Data.bCanRunandShoot ? TEXT("on") : TEXT("off")));
+                Data.bCanRunandShoot ? TEXT("on") : TEXT("off"),
+                Data.MaxJumps,
+                Data.bCanDash ? TEXT("on") : TEXT("off")));
     }
 }
