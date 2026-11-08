@@ -64,6 +64,11 @@ struct FSPEnemyUnlock
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour")
     bool bUnlockDash = false;
+
+    /** 1.5 = projectiles 50% faster. */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Weapon", meta = (ClampMin = "0.1"))
+    float ProjectileSpeedMultiplier = 1.f;
+
 };
 
 /** Every final value of one level, once the stats and the reached tiers are combined. */
@@ -110,6 +115,10 @@ struct FSPEnemyLevelData
 
     UPROPERTY(BlueprintReadOnly, Category = "Level")
     bool bCanDash = false;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Level")
+    float ProjectileSpeed = 0.f;
+
 };
 
 /** Data Asset holding how the enemy grows each round. */
@@ -145,10 +154,13 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Base", meta = (ClampMin = "0", ClampMax = "45"))
     float BaseSpreadAngle = 8.f;
 
-    /** Seconds between two attacks. */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Base", meta = (ClampMin = "0"))
     float BaseAttackCooldown = 1.f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Base", meta = (ClampMin = "100"))
+    float BaseProjectileSpeed = 3000.f;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlocks")
     TArray<FSPEnemyUnlock> Unlocks;
+
 };

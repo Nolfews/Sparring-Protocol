@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Combat/SP_CombatProjectile.h"
 
 void USP_ShootComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
@@ -90,7 +91,17 @@ void USP_ShootComponent::FireOnce()
 	FireShot();
 }
 
+void USP_ShootComponent::FireOnceFrom(const FVector& MuzzleLocation)
+{
+	FireShotFrom(MuzzleLocation);
+}
+
 void USP_ShootComponent::FireShot()
+{
+	FireShotFrom(TOptional<FVector>());
+}
+
+void USP_ShootComponent::FireShotFrom(const TOptional<FVector>& MuzzleLocation)
 {
 	ACharacter* Character = GetCharacter();
 	UWorld* World = GetWorld();
@@ -122,6 +133,13 @@ void USP_ShootComponent::FireShot()
 		const bool bHit = World->LineTraceSingleByChannel(Hit, Start, End, TraceChannel, Params);
 		const FVector TraceEnd = bHit ? Hit.ImpactPoint : End;
 
+		// Projectile weapon: the trace only finds the aim point, the bullet deals the damage.
+		if (ProjectileClass)
+		{
+			SpawnProjectile(MuzzleLocation.Get(Start), TraceEnd);
+			continue;
+		}
+
 		if (bHit && Hit.GetActor())
 		{
 			UGameplayStatics::ApplyPointDamage(Hit.GetActor(), Damage, Direction, Hit, Character->GetController(), Character, DamageType);
@@ -137,5 +155,25 @@ void USP_ShootComponent::FireShot()
 		}
 
 		OnShotTrace.Broadcast(Start, TraceEnd, Hit);
+	}
+}
+
+void USP_ShootComponent::SpawnProjectile(const FVector& SpawnLocation, const FVector& AimPoint)
+{
+	ACharacter* Character = GetCharacter();
+	const FVector Direction = (AimPoint - SpawnLocation).GetSafeNormal();
+	if (Direction.IsNearlyZero())
+	{
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = Character;
+	SpawnParams.Instigator = Character;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	if (ASP_CombatProjectile* Projectile = GetWorld()->SpawnActor<ASP_CombatProjectile>(ProjectileClass, SpawnLocation, Direction.Rotation(), SpawnParams))
+	{
+		Projectile->Launch(Direction, ProjectileSpeed, Damage, DamageType);
 	}
 }

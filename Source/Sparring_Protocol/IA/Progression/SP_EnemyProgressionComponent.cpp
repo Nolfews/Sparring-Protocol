@@ -82,6 +82,7 @@ void USP_EnemyProgressionComponent::ApplyLevel(int32 NewLevel)
     {
         ShootComp->Damage = Data.Damage;
         ShootComp->SpreadAngle = Data.SpreadAngle;
+        ShootComp->ProjectileSpeed = Data.ProjectileSpeed;
     }
 
     if (USP_MovementPaceComponent* PaceComp = GetOwner()->FindComponentByClass<USP_MovementPaceComponent>())
@@ -112,12 +113,13 @@ void USP_EnemyProgressionComponent::ApplyLevel(int32 NewLevel)
     if (bShowDebugMessages && GEngine)
     {
         GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Cyan,
-            FString::Printf(TEXT("ENEMY LEVEL %d | %.0f HP | %.1f damage | %.0f/%.0f speed | %.0f sight | %.1f spread | %.2f s | search %s | run&shoot %s | jumps %d | dash %s"),
+            FString::Printf(TEXT("ENEMY LEVEL %d | %.0f HP | %.1f damage | %.0f/%.0f speed | %.0f sight | %.1f spread | %.2f s | search %s | run&shoot %s | jumps %d | dash %s | bullet %.0f"),
                 CurrentLevel, Data.MaxHealth, Data.Damage, Data.WalkSpeed, Data.RunSpeed,
                 Data.SightRadius, Data.SpreadAngle, Data.AttackCooldown,
                 Data.bCanSearch ? TEXT("on") : TEXT("off"),
                 Data.bCanRunandShoot ? TEXT("on") : TEXT("off"),
                 Data.MaxJumps,
-                Data.bCanDash ? TEXT("on") : TEXT("off")));
+                Data.bCanDash ? TEXT("on") : TEXT("off"),
+                Data.ProjectileSpeed));
     }
 }

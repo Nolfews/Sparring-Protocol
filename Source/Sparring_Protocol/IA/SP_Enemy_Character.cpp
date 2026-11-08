@@ -11,6 +11,7 @@
 #include "BrainComponent.h"
 #include "IA/Progression/SP_EnemyProgressionComponent.h"
 #include "IA/Components/SP_EnemyMobilityComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 // Sets default values
 ASP_Enemy_Character::ASP_Enemy_Character()
@@ -22,6 +23,9 @@ ASP_Enemy_Character::ASP_Enemy_Character()
 	Attack = CreateDefaultSubobject<USP_AttackComponent>(TEXT("Attack"));
 	Progression = CreateDefaultSubobject<USP_EnemyProgressionComponent>(TEXT("Progression"));
 	Mobility = CreateDefaultSubobject<USP_EnemyMobilityComponent>(TEXT("Mobility"));
+	Rifle = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Rifle"));
+	Rifle->SetupAttachment(GetMesh(), TEXT("HandGrip_R"));
+	Rifle->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// The body follows the controller rotation. The controller looks where the AI walks (move focus)
 	// or at its target (gameplay focus): this lets the enemy face the player while strafing.
@@ -49,7 +53,7 @@ void ASP_Enemy_Character::HandleAttackFired()
 {
 	if (USP_ShootComponent* Shoot = FindComponentByClass<USP_ShootComponent>())
 	{
-		Shoot->FireOnce();
+		Shoot->FireOnceFrom(GetMuzzleLocation());
 	}
 }
 
@@ -84,4 +88,19 @@ void ASP_Enemy_Character::HandleDeath(AActor* Killer)
 void ASP_Enemy_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+FVector ASP_Enemy_Character::GetMuzzleLocation() const
+{
+	if (Rifle && Rifle->DoesSocketExist(RifleMuzzleSocketName))
+	{
+		return Rifle->GetSocketLocation(RifleMuzzleSocketName);
+	}
+
+	if (GetMesh() && GetMesh()->DoesSocketExist(HandMuzzleSocketName))
+	{
+		return GetMesh()->GetSocketLocation(HandMuzzleSocketName);
+	}
+
+	return GetPawnViewLocation();
 }

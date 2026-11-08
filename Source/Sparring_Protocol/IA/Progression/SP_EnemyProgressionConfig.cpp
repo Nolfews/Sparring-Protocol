@@ -10,6 +10,7 @@ FSPEnemyLevelData USP_EnemyProgressionConfig::GetLevelData(int32 Level) const
     Data.SightRadius = BaseSightRadius;
     Data.SpreadAngle = BaseSpreadAngle;
     Data.AttackCooldown = BaseAttackCooldown;
+    Data.ProjectileSpeed = BaseProjectileSpeed;
 
     // The tiers stack: every tier reached adds its changes.
     for (const FSPEnemyUnlock& Unlock : Unlocks)
@@ -29,6 +30,7 @@ FSPEnemyLevelData USP_EnemyProgressionConfig::GetLevelData(int32 Level) const
         Data.bCanRunandShoot = Data.bCanRunandShoot || Unlock.bUnlockRunandShoot;
         Data.MaxJumps = FMath::Max(Data.MaxJumps, Unlock.UnlockedJumps);
         Data.bCanDash = Data.bCanDash || Unlock.bUnlockDash;
+        Data.ProjectileSpeed *= Unlock.ProjectileSpeedMultiplier;
     }
 
     Data.LoseSightRadius = Data.SightRadius + LoseSightMargin;
