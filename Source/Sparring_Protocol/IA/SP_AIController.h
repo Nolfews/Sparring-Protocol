@@ -28,6 +28,7 @@ public:
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void BeginPlay() override;
+	virtual void OnUnPossess() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTreeAsset;   // keep the SAME name: your BP value is preserved
@@ -51,7 +52,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
 	FName CanRunandShootKey = TEXT("bCanRunandShoot");
 
+	/** X-ray tier: how far the enemy feels the player through walls. */
+	UPROPERTY(EditDefaultsOnly, Category = "AI|XRay", meta = (ClampMin = "0"))
+	float XRayRange = 5000.f;
+
+	/** Seconds between two updates of the felt position. */
+	UPROPERTY(EditDefaultsOnly, Category = "AI|XRay", meta = (ClampMin = "0.05"))
+	float XRayInterval = 0.25f;
+
 private:
 	UFUNCTION()
 	void HandleTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+	void SetXRayEnabled(bool bEnabled);
+	void UpdateXRay();
+
+	FTimerHandle XRayTimer;
 };

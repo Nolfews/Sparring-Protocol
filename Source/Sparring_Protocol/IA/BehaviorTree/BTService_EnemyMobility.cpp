@@ -3,6 +3,7 @@
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -21,9 +22,10 @@ UBTService_EnemyMobility::UBTService_EnemyMobility()
 	NodeName = TEXT("Enemy Mobility");
 	Interval = 0.15f;
 	RandomDeviation = 0.05f;
-	bNotifyCeaseRelevant = true; // without this, OnCeaseRelevant is never called
 
+	// Both kinds of key appear in the dropdown: Chase uses TargetActor, Investigate LastKnowLocation.
 	BlackboardKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTService_EnemyMobility, BlackboardKey), AActor::StaticClass());
+	BlackboardKey.AddVectorFilter(this, GET_MEMBER_NAME_CHECKED(UBTService_EnemyMobility, BlackboardKey));
 }
 
 void UBTService_EnemyMobility::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -31,26 +33,38 @@ void UBTService_EnemyMobility::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	const AActor* Goal = BlackboardComp ? Cast<AActor>(BlackboardComp->GetValueAsObject(BlackboardKey.SelectedKeyName)) : nullptr;
 	USP_EnemyMobilityComponent* Mobility = FindMobility(OwnerComp);
-	if (!Goal || !Mobility)
+	if (!BlackboardComp || !Mobility)
 	{
 		return;
 	}
 
-	// A player in the middle of a jump is not standing on a block.
-	const ACharacter* GoalCharacter = Cast<ACharacter>(Goal);
-	const bool bGoalIsGrounded = !GoalCharacter || !GoalCharacter->GetCharacterMovement()->IsFalling();
+	FVector GoalLocation;
+	bool bGoalIsGrounded = true;
 
-	Mobility->UpdateMobility(Goal->GetActorLocation(), bGoalIsGrounded);
-}
-
-void UBTService_EnemyMobility::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
-{
-	if (USP_EnemyMobilityComponent* Mobility = FindMobility(OwnerComp))
+	if (BlackboardKey.SelectedKeyType == UBlackboardKeyType_Vector::StaticClass())
 	{
-		Mobility->StopClimbing();
+		// A position: the controller only writes it while the player stands on something.
+		GoalLocation = BlackboardComp->GetValueAsVector(BlackboardKey.SelectedKeyName);
+		if (!FAISystem::IsValidLocation(GoalLocation))
+		{
+			return;
+		}
+	}
+	else
+	{
+		const AActor* Goal = Cast<AActor>(BlackboardComp->GetValueAsObject(BlackboardKey.SelectedKeyName));
+		if (!Goal)
+		{
+			return;
+		}
+
+		GoalLocation = Goal->GetActorLocation();
+
+		// A player in the middle of a jump is not standing on a block.
+		const ACharacter* GoalCharacter = Cast<ACharacter>(Goal);
+		bGoalIsGrounded = !GoalCharacter || !GoalCharacter->GetCharacterMovement()->IsFalling();
 	}
 
-	Super::OnCeaseRelevant(OwnerComp, NodeMemory);
+	Mobility->UpdateMobility(GoalLocation, bGoalIsGrounded);
 }

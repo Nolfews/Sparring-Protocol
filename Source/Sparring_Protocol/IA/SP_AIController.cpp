@@ -5,6 +5,10 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "IA/Progression/SP_EnemyProgressionConfig.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 
 ASP_AIController::ASP_AIController()
@@ -24,7 +28,7 @@ ASP_AIController::ASP_AIController()
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
-    
+
 
 	Perception->ConfigureSense(*SightConfig);
 	Perception->SetDominantSense(SightConfig->GetSenseImplementation());
@@ -93,4 +97,57 @@ void ASP_AIController::ApplyLevelData(const FSPEnemyLevelData& LevelData)
         BlackboardComponent->SetValueAsBool(CanSearchKey, LevelData.bCanSearch);
         BlackboardComponent->SetValueAsBool(CanRunandShootKey, LevelData.bCanRunandShoot);
     }
+    SetXRayEnabled(LevelData.bHasXRay);
+}
+
+void ASP_AIController::OnUnPossess()
+{
+    SetXRayEnabled(false);
+    Super::OnUnPossess();
+}
+
+void ASP_AIController::SetXRayEnabled(bool bEnabled)
+{
+    FTimerManager& Timers = GetWorldTimerManager();
+
+    if (!bEnabled)
+    {
+        Timers.ClearTimer(XRayTimer);
+        return;
+    }
+
+    if (!Timers.IsTimerActive(XRayTimer))
+    {
+        Timers.SetTimer(XRayTimer, this, &ASP_AIController::UpdateXRay, XRayInterval, true);
+    }
+}
+
+void ASP_AIController::UpdateXRay()
+{
+    UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
+    const APawn* ControlledPawn = GetPawn();
+    if (!BlackboardComponent || !ControlledPawn)
+    {
+        return;
+    }
+
+    // The eyes keep the priority: a seen player is chased, and only a seen player is shot.
+    if (BlackboardComponent->GetValueAsObject(TargetActorKey))
+    {
+        return;
+    }
+
+    const ACharacter* Player = Cast<ACharacter>(UGameplayStatics::GetPlayerPawn(this, 0));
+    if (!Player || Player->GetCharacterMovement()->IsFalling())
+    {
+        // In the air: keep the last position where the player stood.
+        return;
+    }
+
+    if (FVector::Dist(Player->GetActorLocation(), ControlledPawn->GetActorLocation()) > XRayRange)
+    {
+        return;
+    }
+
+    BlackboardComponent->SetValueAsVector(LastKnownLocationKey, Player->GetActorLocation());
 }

@@ -18,8 +18,8 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	/** 0 jumps = the enemy stays on the navmesh. */
-	void SetCapabilities(int32 NewMaxJumps, bool bNewCanDash);
+	/** 0 jumps = the enemy stays on the navmesh. Vault = jump over obstacles instead of walking around them. */
+	void SetCapabilities(int32 NewMaxJumps, bool bNewCanDash, bool bNewCanVault);
 
 	/** Called by the Behavior Tree service with the position of the target. */
 	void UpdateMobility(const FVector& GoalLocation, bool bGoalIsGrounded);
@@ -62,6 +62,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mobility|Climb")
 	float NextJumpMaxVelocityZ = 50.f;
 
+	/** X-ray tier: jump over an obstacle when walking around it is this many times longer. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mobility|Vault", meta = (ClampMin = "1"))
+	float VaultDetourRatio = 1.6f;
+
+	/** Closer than this, the goal is reached: no vault. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mobility|Vault", meta = (ClampMin = "0"))
+	float ArriveDistance = 150.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mobility|Dash", meta = (ClampMin = "0"))
 	float DashMinDistance = 1000.f;
 
@@ -77,17 +85,20 @@ protected:
 	float DashMinSpeed = 100.f;
 
 private:
-	bool ShouldClimbTo(const FVector& Goal);
+	bool ShouldClimbTo(const FVector& Goal, bool& bOutVault);
 	float GetMaxClimbHeight() const;
-	bool IsWallAhead(const FVector& Direction) const;
-	void StartClimbing();
+	bool IsWallAhead(const FVector& Direction, float HeightOffset) const;
+	void StartClimbing(bool bVault);
 	void TryJump();
 	void ReleaseJump();
 	void TryDash(const FVector& Goal);
 
 	int32 MaxJumps = 0;
 	bool bCanDash = false;
+	bool bCanVault = false;
 	bool bClimbing = false;
+	bool bVaulting = false;
+	bool bHasLeftGround = false;
 	bool bJumpHeld = false;
 	FVector CurrentGoal = FVector::ZeroVector;
 

@@ -31,6 +31,7 @@ FSPEnemyLevelData USP_EnemyProgressionConfig::GetLevelData(int32 Level) const
         Data.MaxJumps = FMath::Max(Data.MaxJumps, Unlock.UnlockedJumps);
         Data.bCanDash = Data.bCanDash || Unlock.bUnlockDash;
         Data.ProjectileSpeed *= Unlock.ProjectileSpeedMultiplier;
+        Data.bHasXRay = Data.bHasXRay || Unlock.bUnlockXRay;
     }
 
     Data.LoseSightRadius = Data.SightRadius + LoseSightMargin;

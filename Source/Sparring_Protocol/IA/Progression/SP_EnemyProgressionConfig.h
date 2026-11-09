@@ -69,6 +69,10 @@ struct FSPEnemyUnlock
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Weapon", meta = (ClampMin = "0.1"))
     float ProjectileSpeedMultiplier = 1.f;
 
+    /** Feels the player through walls and jumps over obstacles. Never shoots through walls. */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour")
+    bool bUnlockXRay = false;
+
 };
 
 /** Every final value of one level, once the stats and the reached tiers are combined. */
@@ -119,6 +123,8 @@ struct FSPEnemyLevelData
     UPROPERTY(BlueprintReadOnly, Category = "Level")
     float ProjectileSpeed = 0.f;
 
+    UPROPERTY(BlueprintReadOnly, Category = "Level")
+    bool bHasXRay = false;
 };
 
 /** Data Asset holding how the enemy grows each round. */

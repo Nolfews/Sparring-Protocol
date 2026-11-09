@@ -17,10 +17,11 @@ USP_EnemyMobilityComponent::USP_EnemyMobilityComponent()
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 }
 
-void USP_EnemyMobilityComponent::SetCapabilities(int32 NewMaxJumps, bool bNewCanDash)
+void USP_EnemyMobilityComponent::SetCapabilities(int32 NewMaxJumps, bool bNewCanDash, bool bNewCanVault)
 {
 	MaxJumps = FMath::Max(NewMaxJumps, 0);
 	bCanDash = bNewCanDash;
+	bCanVault = bNewCanVault;
 
 	if (USP_JumpComponent* Jump = GetOwner()->FindComponentByClass<USP_JumpComponent>())
 	{
@@ -38,17 +39,20 @@ void USP_EnemyMobilityComponent::UpdateMobility(const FVector& GoalLocation, boo
 		return;
 	}
 
-	if (bGoalIsGrounded && ShouldClimbTo(GoalLocation))
+	bool bVault = false;
+	if (bGoalIsGrounded && ShouldClimbTo(GoalLocation, bVault))
 	{
-		StartClimbing();
+		StartClimbing(bVault);
 		return;
 	}
 
 	TryDash(GoalLocation);
 }
 
-bool USP_EnemyMobilityComponent::ShouldClimbTo(const FVector& Goal)
+bool USP_EnemyMobilityComponent::ShouldClimbTo(const FVector& Goal, bool& bOutVault)
 {
+	bOutVault = false;
+
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	const UCharacterMovementComponent* Movement = Character ? Character->GetCharacterMovement() : nullptr;
 
@@ -59,19 +63,31 @@ bool USP_EnemyMobilityComponent::ShouldClimbTo(const FVector& Goal)
 
 	const FVector Location = Character->GetActorLocation();
 	const float HeightDifference = Goal.Z - Location.Z;
+	const float Distance2D = FVector::Dist2D(Location, Goal);
 
-	if (FMath::Abs(HeightDifference) < MinHeightDifference
-		|| HeightDifference > GetMaxClimbHeight()
-		|| FVector::Dist2D(Location, Goal) > ClimbRange)
+	if (HeightDifference > GetMaxClimbHeight() || Distance2D > ClimbRange)
 	{
 		return false;
 	}
 
-	// A ramp leads there: the normal Move To is better.
 	const UNavigationPath* Path = UNavigationSystemV1::FindPathToLocationSynchronously(this, Location, Goal, Character);
 	const bool bHasCompletePath = Path && Path->IsValid() && !Path->IsPartial();
 
-	return !bHasCompletePath;
+	// Another level: climb or drop, unless a ramp leads there.
+	if (FMath::Abs(HeightDifference) >= MinHeightDifference)
+	{
+		return !bHasCompletePath;
+	}
+
+	// Same level: only the X-ray tier jumps over obstacles instead of walking around them.
+	if (!bCanVault || Distance2D < ArriveDistance)
+	{
+		return false;
+	}
+
+	const bool bLongDetour = bHasCompletePath && Path->GetPathLength() > Distance2D * VaultDetourRatio;
+	bOutVault = !bHasCompletePath || bLongDetour;
+	return bOutVault;
 }
 
 float USP_EnemyMobilityComponent::GetMaxClimbHeight() const
@@ -95,9 +111,11 @@ float USP_EnemyMobilityComponent::GetMaxClimbHeight() const
 	return JumpHeight * MaxJumps * ClimbHeightMargin;
 }
 
-void USP_EnemyMobilityComponent::StartClimbing()
+void USP_EnemyMobilityComponent::StartClimbing(bool bVault)
 {
 	bClimbing = true;
+	bVaulting = bVault;
+	bHasLeftGround = false;
 	ClimbEndTime = GetWorld()->GetTimeSeconds() + MaxClimbTime;
 
 	SetComponentTickEnabled(true);
@@ -123,9 +141,18 @@ void USP_EnemyMobilityComponent::TickComponent(float DeltaTime, ELevelTick TickT
 		ReleaseJump();
 	}
 
+	if (!Movement->IsMovingOnGround())
+	{
+		bHasLeftGround = true;
+	}
+
 	const FVector Location = Character->GetActorLocation();
 	const float HeightDifference = CurrentGoal.Z - Location.Z;
-	const bool bArrived = Movement->IsMovingOnGround() && FMath::Abs(HeightDifference) < MinHeightDifference;
+	const bool bSameLevel = FMath::Abs(HeightDifference) < MinHeightDifference;
+	const bool bCloseEnough = FVector::Dist2D(Location, CurrentGoal) < ArriveDistance;
+
+	// A vault starts and ends at the same level: it is over once the enemy has left the ground and landed.
+	const bool bArrived = Movement->IsMovingOnGround() && bSameLevel && (!bVaulting || bHasLeftGround || bCloseEnough);
 
 	if (bArrived || Now >= ClimbEndTime)
 	{
@@ -148,12 +175,22 @@ void USP_EnemyMobilityComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 	if (Movement->IsMovingOnGround())
 	{
-		if (HeightDifference > 0.f && IsWallAhead(Direction))
+		if ((HeightDifference > 0.f || bVaulting) && IsWallAhead(Direction, 0.f))
 		{
+			// A ray at the highest point the jumps can reach: if it hits, the wall is too tall.
+			const float FeetToCenter = Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+			if (IsWallAhead(Direction, GetMaxClimbHeight() - FeetToCenter))
+			{
+				// Let the Move To walk around it.
+				StopClimbing();
+				NextClimbTime = Now + ClimbRetryDelay;
+				return;
+			}
+
 			TryJump();
 		}
 	}
-	else if (HeightDifference > 0.f
+	else if ((HeightDifference > 0.f || (bVaulting && IsWallAhead(Direction, 0.f)))
 		&& Movement->Velocity.Z <= NextJumpMaxVelocityZ
 		&& Character->JumpCurrentCount < MaxJumps)
 	{
@@ -161,10 +198,10 @@ void USP_EnemyMobilityComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	}
 }
 
-bool USP_EnemyMobilityComponent::IsWallAhead(const FVector& Direction) const
+bool USP_EnemyMobilityComponent::IsWallAhead(const FVector& Direction, float HeightOffset) const
 {
 	const ACharacter* Character = Cast<ACharacter>(GetOwner());
-	const FVector Start = Character->GetActorLocation();
+	const FVector Start = Character->GetActorLocation() + FVector(0.f, 0.f, HeightOffset);
 	const float Distance = Character->GetCapsuleComponent()->GetScaledCapsuleRadius() + WallCheckDistance;
 
 	FCollisionQueryParams Params;
@@ -209,6 +246,7 @@ void USP_EnemyMobilityComponent::StopClimbing()
 {
 	ReleaseJump();
 	bClimbing = false;
+	bVaulting = false;
 	SetComponentTickEnabled(false);
 }
 
