@@ -30,6 +30,10 @@ void USP_CharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	GroundSpeed = Velocity.Size2D();
 	Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerCharacter->GetActorRotation());
 	bIsFalling = OwnerMovement->IsFalling();
+
+	// The blend space stops at its fastest sample: past it, speed the animation up instead.
+	LocomotionPlayRate = FMath::Clamp(GroundSpeed / BlendSpaceMaxSpeed, 1.f, MaxLocomotionPlayRate);
+
 	const float TargetAim = (OwnerAttack && OwnerAttack->WantsToAim()) ? 1.f : 0.f;
 	AimAlpha = FMath::FInterpTo(AimAlpha, TargetAim, DeltaSeconds, AimInterpSpeed);
 }

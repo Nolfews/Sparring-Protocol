@@ -137,6 +137,9 @@ public:
     /** Combines the stats and every tier reached at this level. */
     FSPEnemyLevelData GetLevelData(int32 Level) const;
 
+    UFUNCTION(CallInEditor, Category = "Preview")
+    void PrintLevelTable() const;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
     FSPScalingStats MaxHealth = {100.f, 20.f};
 
@@ -168,5 +171,20 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlocks")
     TArray<FSPEnemyUnlock> Unlocks;
+
+    /** Last level printed by Print Level Table. */
+    UPROPERTY(EditAnywhere, Category = "Preview", meta = (ClampMin = "1"))
+    int32 PreviewMaxLevel = 40;
+
+    /** Player values, only used to count the shots of a duel in the table. */
+    UPROPERTY(EditAnywhere, Category = "Preview", meta = (ClampMin = "1"))
+    float PreviewPlayerHealth = 100.f;
+
+    UPROPERTY(EditAnywhere, Category = "Preview", meta = (ClampMin = "1"))
+    float PreviewPlayerDamage = 20.f;
+
+    /** Shots per second of the player weapon. */
+    UPROPERTY(EditAnywhere, Category = "Preview", meta = (ClampMin = "0.1"))
+    float PreviewPlayerFireRate = 8.f;
 
 };
