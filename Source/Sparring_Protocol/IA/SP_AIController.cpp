@@ -96,6 +96,7 @@ void ASP_AIController::ApplyLevelData(const FSPEnemyLevelData& LevelData)
         BlackboardComponent->SetValueAsFloat(AttackCooldownKey, LevelData.AttackCooldown);
         BlackboardComponent->SetValueAsBool(CanSearchKey, LevelData.bCanSearch);
         BlackboardComponent->SetValueAsBool(CanRunandShootKey, LevelData.bCanRunandShoot);
+        BlackboardComponent->SetValueAsBool(CanLookAroundKey, LevelData.bCanLookAround);
     }
     SetXRayEnabled(LevelData.bHasXRay);
 }

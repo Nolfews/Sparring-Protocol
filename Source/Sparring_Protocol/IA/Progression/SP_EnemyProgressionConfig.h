@@ -73,6 +73,9 @@ struct FSPEnemyUnlock
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour")
     bool bUnlockXRay = false;
 
+    /** When the patrol stops, the enemy turns on itself to look around. */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Unlock|Behaviour")
+    bool bUnlockLookAround = false;
 };
 
 /** Every final value of one level, once the stats and the reached tiers are combined. */
@@ -125,6 +128,9 @@ struct FSPEnemyLevelData
 
     UPROPERTY(BlueprintReadOnly, Category = "Level")
     bool bHasXRay = false;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Level")
+    bool bCanLookAround = false;
 };
 
 /** Data Asset holding how the enemy grows each round. */

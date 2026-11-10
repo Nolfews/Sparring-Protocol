@@ -34,6 +34,7 @@ FSPEnemyLevelData USP_EnemyProgressionConfig::GetLevelData(int32 Level) const
         Data.bCanDash = Data.bCanDash || Unlock.bUnlockDash;
         Data.ProjectileSpeed *= Unlock.ProjectileSpeedMultiplier;
         Data.bHasXRay = Data.bHasXRay || Unlock.bUnlockXRay;
+        Data.bCanLookAround = Data.bCanLookAround || Unlock.bUnlockLookAround;
     }
 
     Data.LoseSightRadius = Data.SightRadius + LoseSightMargin;

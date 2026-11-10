@@ -52,6 +52,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
 	FName CanRunandShootKey = TEXT("bCanRunandShoot");
 
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
+	FName CanLookAroundKey = TEXT("bCanLookAround");
+
 	/** X-ray tier: how far the enemy feels the player through walls. */
 	UPROPERTY(EditDefaultsOnly, Category = "AI|XRay", meta = (ClampMin = "0"))
 	float XRayRange = 5000.f;

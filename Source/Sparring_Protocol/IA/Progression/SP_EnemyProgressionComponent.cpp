@@ -113,7 +113,7 @@ void USP_EnemyProgressionComponent::ApplyLevel(int32 NewLevel)
     if (bShowDebugMessages && GEngine)
     {
          GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Cyan,
-            FString::Printf(TEXT("ENEMY LEVEL %d | %.0f HP | %.1f damage | %.0f/%.0f speed | %.0f sight | %.1f spread | %.2f s | search %s | run&shoot %s | jumps %d | dash %s | bullet %.0f | xray %s"),
+            FString::Printf(TEXT("ENEMY LEVEL %d | %.0f HP | %.1f damage | %.0f/%.0f speed | %.0f sight | %.1f spread | %.2f s | search %s | run&shoot %s | jumps %d | dash %s | bullet %.0f | xray %s | look %s"),
                 CurrentLevel, Data.MaxHealth, Data.Damage, Data.WalkSpeed, Data.RunSpeed,
                 Data.SightRadius, Data.SpreadAngle, Data.AttackCooldown,
                 Data.bCanSearch ? TEXT("on") : TEXT("off"),
@@ -121,6 +121,7 @@ void USP_EnemyProgressionComponent::ApplyLevel(int32 NewLevel)
                 Data.MaxJumps,
                 Data.bCanDash ? TEXT("on") : TEXT("off"),
                 Data.ProjectileSpeed,
-                Data.bHasXRay ? TEXT("on") : TEXT("off")));
+                Data.bHasXRay ? TEXT("on") : TEXT("off"),
+                Data.bCanLookAround ? TEXT("on") : TEXT("off")));
     }
 }
