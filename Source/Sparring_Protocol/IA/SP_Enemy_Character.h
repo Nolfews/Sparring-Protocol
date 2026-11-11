@@ -3,14 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "Combat/SP_CombatCharacter.h"
 #include "SP_Enemy_Character.generated.h"
 
 class USP_MovementPaceComponent;
 class USP_AttackComponent;
 
+/**
+ * The enemy. Now built on ASP_CombatCharacter like the player: it gets a health component,
+ * can carry ability components (the shoot ability) and handles its own death.
+ */
 UCLASS()
-class SPARRING_PROTOCOL_API ASP_Enemy_Character : public ACharacter
+class SPARRING_PROTOCOL_API ASP_Enemy_Character : public ASP_CombatCharacter
 {
 	GENERATED_BODY()
 
@@ -25,10 +29,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USP_AttackComponent> Attack;
 
+	/** The attack animation reached its AttackFired notify: the shoot ability (if any) fires a shot. */
+	UFUNCTION()
+	void HandleAttackFired();
+
 public:	
 	ASP_Enemy_Character();
-
-	// Called every frame
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

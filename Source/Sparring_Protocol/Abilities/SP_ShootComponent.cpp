@@ -85,6 +85,11 @@ void USP_ShootComponent::GetAimViewPoint(FVector& OutLocation, FRotator& OutRota
 	}
 }
 
+void USP_ShootComponent::FireOnce()
+{
+	FireShot();
+}
+
 void USP_ShootComponent::FireShot()
 {
 	ACharacter* Character = GetCharacter();

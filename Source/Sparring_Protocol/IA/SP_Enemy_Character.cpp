@@ -5,6 +5,7 @@
 #include "SP_AIController.h"
 #include "IA/Components/SP_MovementPaceComponent.h"
 #include "IA/Components/SP_AttackComponent.h"
+#include "Abilities/SP_ShootComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -31,13 +32,24 @@ ASP_Enemy_Character::ASP_Enemy_Character()
 void ASP_Enemy_Character::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// The animation decides WHEN a shot leaves (AnimNotify), the shoot ability decides WHAT it does.
+	if (Attack)
+	{
+		Attack->OnAttackFired.AddDynamic(this, &ASP_Enemy_Character::HandleAttackFired);
+	}
 }
 
-
+void ASP_Enemy_Character::HandleAttackFired()
+{
+	if (USP_ShootComponent* Shoot = FindComponentByClass<USP_ShootComponent>())
+	{
+		Shoot->FireOnce();
+	}
+}
 
 // Called to bind functionality to input
 void ASP_Enemy_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
-
