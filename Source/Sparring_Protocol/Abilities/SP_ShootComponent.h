@@ -6,6 +6,7 @@
 #include "SP_ShootComponent.generated.h"
 
 class UDamageType;
+class ASP_CombatProjectile;
 
 /** Fired once per shot (sound, muzzle flash, recoil, camera shake). */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSPOnShotFired);
@@ -54,6 +55,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot")
 	TSubclassOf<UDamageType> DamageType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot|Projectile")
+	TSubclassOf<ASP_CombatProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot|Projectile", meta = (ClampMin = "100", Units = "CentimetersPerSecond"))
+	float ProjectileSpeed = 3000.f;
+
 	/** Draws the impacts (red = hit something, green = nothing). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot|Debug")
 	bool bDrawDebug = true;
@@ -71,6 +78,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shoot")
 	void FireOnce();
 
+	UFUNCTION(BlueprintCallable, Category = "Shoot")
+	void FireOnceFrom(const FVector& MuzzleLocation);
+
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void ActivateAbility() override;
@@ -79,6 +89,8 @@ protected:
 
 private:
 	void FireShot();
+	void FireShotFrom(const TOptional<FVector>& MuzzleLocation);
+	void SpawnProjectile(const FVector& SpawnLocation, const FVector& AimPoint);
 	void GetAimViewPoint(FVector& OutLocation, FRotator& OutRotation) const;
 
 	double LastShotTime = -1000.0;

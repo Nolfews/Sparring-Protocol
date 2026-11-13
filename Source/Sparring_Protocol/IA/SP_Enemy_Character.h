@@ -8,6 +8,9 @@
 
 class USP_MovementPaceComponent;
 class USP_AttackComponent;
+class USP_EnemyProgressionComponent;
+class USP_EnemyMobilityComponent;
+class USkeletalMeshComponent;
 
 /**
  * The enemy. Now built on ASP_CombatCharacter like the player: it gets a health component,
@@ -22,12 +25,33 @@ class SPARRING_PROTOCOL_API ASP_Enemy_Character : public ASP_CombatCharacter
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void HandleDeath(AActor* Killer) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USP_MovementPaceComponent> MovementPace;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USP_AttackComponent> Attack;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USP_EnemyProgressionComponent> Progression;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USP_EnemyMobilityComponent> Mobility;
+
+	/** Hidden until the visible rifle tier. The mesh is chosen in the Blueprint. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USkeletalMeshComponent> Rifle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName RifleMuzzleSocketName = TEXT("Muzzle");
+
+	/** Used while the rifle is hidden. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName HandMuzzleSocketName = TEXT("weapon_r_muzzle");
+
+	/** Where the projectiles leave. */
+	FVector GetMuzzleLocation() const;
 
 	/** The attack animation reached its AttackFired notify: the shoot ability (if any) fires a shot. */
 	UFUNCTION()

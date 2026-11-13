@@ -4,6 +4,7 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "DrawDebugHelpers.h"
+#include "Engine/World.h"
 
 USP_AttackComponent::USP_AttackComponent()
 {
@@ -12,7 +13,7 @@ USP_AttackComponent::USP_AttackComponent()
 
 bool USP_AttackComponent::StartAttack()
 {
-	if (bIsAttacking || !AttackMontage)
+	if (bIsAttacking || !AttackMontage || GetWorld()->GetTimeSeconds() < NextAttackTime)
 	{
 		return false;
 	}
@@ -25,7 +26,7 @@ bool USP_AttackComponent::StartAttack()
 	}
 
 	// 0 means the montage could not play (no matching Slot in the AnimGraph, wrong skeleton...).
-	if (Character->PlayAnimMontage(AttackMontage) <= 0.f)
+	if (Character->PlayAnimMontage(AttackMontage, AttackPlayRate) <= 0.f)
 	{
 		return false;
 	}
@@ -70,4 +71,20 @@ void USP_AttackComponent::NotifyAttackFired()
 void USP_AttackComponent::HandleMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	bIsAttacking = false;
+
+	if (const UWorld* World = GetWorld())
+	{
+		NextAttackTime = World->GetTimeSeconds() + AttackCooldown;
+	}
+}
+
+bool USP_AttackComponent::WantsToAim() const
+{
+	if (bIsAttacking)
+	{
+		return true;
+	}
+
+	const UWorld* World = GetWorld();
+	return World && World->GetTimeSeconds() < NextAttackTime + AimHoldTime;
 }

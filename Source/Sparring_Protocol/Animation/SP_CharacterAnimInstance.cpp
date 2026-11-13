@@ -2,6 +2,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "KismetAnimationLibrary.h"
+#include "IA/Components/SP_AttackComponent.h"
 
 void USP_CharacterAnimInstance::NativeInitializeAnimation()
 {
@@ -11,6 +12,7 @@ void USP_CharacterAnimInstance::NativeInitializeAnimation()
 	if (OwnerCharacter)
 	{
 		OwnerMovement = OwnerCharacter->GetCharacterMovement();
+		OwnerAttack = OwnerCharacter->FindComponentByClass<USP_AttackComponent>();
 	}
 }
 
@@ -28,4 +30,10 @@ void USP_CharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	GroundSpeed = Velocity.Size2D();
 	Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerCharacter->GetActorRotation());
 	bIsFalling = OwnerMovement->IsFalling();
+
+	// The blend space stops at its fastest sample: past it, speed the animation up instead.
+	LocomotionPlayRate = FMath::Clamp(GroundSpeed / BlendSpaceMaxSpeed, 1.f, MaxLocomotionPlayRate);
+
+	const float TargetAim = (OwnerAttack && OwnerAttack->WantsToAim()) ? 1.f : 0.f;
+	AimAlpha = FMath::FInterpTo(AimAlpha, TargetAim, DeltaSeconds, AimInterpSpeed);
 }

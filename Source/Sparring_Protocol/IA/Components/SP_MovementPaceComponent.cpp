@@ -30,3 +30,10 @@ void USP_MovementPaceComponent::SetPace(ESP_MovementPace NewPace)
 		}
 	}
 }
+
+void USP_MovementPaceComponent::SetSpeeds(float NewWalkSpeed, float NewRunSpeed)
+{
+	WalkSpeed = NewWalkSpeed;
+	RunSpeed = NewRunSpeed;
+	SetPace(CurrentPace);
+}
