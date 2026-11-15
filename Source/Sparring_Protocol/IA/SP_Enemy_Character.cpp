@@ -27,6 +27,12 @@ ASP_Enemy_Character::ASP_Enemy_Character()
 	Rifle->SetupAttachment(GetMesh(), TEXT("HandGrip_R"));
 	Rifle->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	// Same transform as Mesh: the Retarget Pose From Mesh node reads its attached parent by default.
+	VisualMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VisualMesh"));
+	VisualMesh->SetupAttachment(GetMesh());
+	VisualMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	VisualMesh->SetGenerateOverlapEvents(false);
+
 	// The body follows the controller rotation. The controller looks where the AI walks (move focus)
 	// or at its target (gameplay focus): this lets the enemy face the player while strafing.
 	bUseControllerRotationYaw = false;
@@ -41,6 +47,26 @@ ASP_Enemy_Character::ASP_Enemy_Character()
 void ASP_Enemy_Character::BeginPlay()
 {
 	Super::BeginPlay();
+
+	USkeletalMeshComponent* DriverMesh = GetMesh();
+	if (VisualMesh && VisualMesh->GetSkeletalMeshAsset() && DriverMesh)
+	{
+		// Hide the driver only (not its children: the rifle and the visual mesh stay visible).
+		DriverMesh->SetVisibility(false, false);
+
+		// A hidden mesh stops animating by default: keep it running for the pose, the notifies and the sockets.
+		DriverMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+
+		// The visual mesh copies a pose: it must be computed first.
+		VisualMesh->AddTickPrerequisiteComponent(DriverMesh);
+
+		// The two skeletons have different proportions: the hidden hand and the visible hand are not
+		// at the same place. The rifle goes in the visible hand, the socket decides its whole placement.
+		if (Rifle && VisualMesh->DoesSocketExist(VisualRifleSocketName))
+		{
+			Rifle->AttachToComponent(VisualMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, VisualRifleSocketName);
+		}
+	}
 
 	// The animation decides WHEN a shot leaves (AnimNotify), the shoot ability decides WHAT it does.
 	if (Attack)

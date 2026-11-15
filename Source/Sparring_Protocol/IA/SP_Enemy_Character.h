@@ -43,6 +43,23 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USkeletalMeshComponent> Rifle;
 
+	/**
+	 * The visible body (the robot), attached to Mesh. Its Anim Blueprint copies the pose of Mesh
+	 * every frame (Retarget Pose From Mesh). When it has a mesh, Mesh becomes an invisible driver
+	 * that keeps playing ABP_Enemy, the montages, the notifies and the sockets (rifle, muzzle).
+	 * Empty = Mesh stays visible, as before.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USkeletalMeshComponent> VisualMesh;
+
+	/**
+	 * Socket of VisualMesh that holds the rifle (added on hand_r of the visual mesh skeleton).
+	 * When it exists, the rifle follows the visible hand instead of the hidden driver hand.
+	 * Missing = the rifle stays on HandGrip_R of Mesh.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName VisualRifleSocketName = TEXT("RifleGrip");
+
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName RifleMuzzleSocketName = TEXT("Muzzle");
 
