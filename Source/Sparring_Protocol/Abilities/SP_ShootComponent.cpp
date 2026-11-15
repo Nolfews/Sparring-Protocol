@@ -141,6 +141,7 @@ void USP_ShootComponent::FireShotFrom(const TOptional<FVector>& MuzzleLocation)
 	Params.AddIgnoredActor(Character);
 
 	OnShotFired.Broadcast();
+	PlayFireSound(MuzzleLocation.Get(Start));
 
 	const float HalfConeRadians = FMath::DegreesToRadians(SpreadAngle * 0.5f);
 
@@ -181,6 +182,27 @@ void USP_ShootComponent::FireShotFrom(const TOptional<FVector>& MuzzleLocation)
 		}
 
 		OnShotTrace.Broadcast(Start, TraceEnd, Hit);
+	}
+}
+
+void USP_ShootComponent::PlayFireSound(const FVector& Location) const
+{
+	if (!FireSound)
+	{
+		return;
+	}
+
+	const float Pitch = 1.f + FMath::FRandRange(-FirePitchVariation, FirePitchVariation);
+	const ACharacter* Character = GetCharacter();
+
+	if (Character && Character->IsLocallyControlled() && Character->IsPlayerControlled())
+	{
+		// Our own gun: always centered and at full volume.
+		UGameplayStatics::PlaySound2D(this, FireSound, 1.f, Pitch);
+	}
+	else
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Location, 1.f, Pitch);
 	}
 }
 
