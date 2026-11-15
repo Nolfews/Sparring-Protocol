@@ -81,6 +81,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shoot")
 	void FireOnceFrom(const FVector& MuzzleLocation);
 
+	/**
+	 * Projectile weapon: where the bullets leave on a normal shot (the player rifle). The aim still
+	 * comes from the eyes. ViewScale: 1 = the real socket; less = pulled toward the eyes, to match
+	 * a first person weapon drawn with the camera First Person Scale.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Shoot")
+	void SetMuzzle(USceneComponent* InMuzzleComponent, FName InMuzzleSocketName, float InViewScale = 1.f);
+
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void ActivateAbility() override;
@@ -95,4 +103,8 @@ private:
 
 	double LastShotTime = -1000.0;
 	FTimerHandle FireTimer;
+
+	TWeakObjectPtr<USceneComponent> MuzzleComponent;
+	FName MuzzleSocketName;
+	float MuzzleViewScale = 1.f;
 };

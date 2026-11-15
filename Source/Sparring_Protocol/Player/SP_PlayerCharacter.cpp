@@ -1,6 +1,7 @@
 #include "Player/SP_PlayerCharacter.h"
 
 #include "Abilities/SP_AbilityComponent.h"
+#include "Abilities/SP_ShootComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -23,11 +24,28 @@ ASP_PlayerCharacter::ASP_PlayerCharacter()
 	FirstPersonCamera->SetRelativeLocation(FVector(0.f, 0.f, StandingCameraHeight));
 	FirstPersonCamera->bUsePawnControlRotation = true;
 
+	// Primitives tagged "First Person" get their own FOV and are scaled toward the camera:
+	// the weapon stays the same on screen whatever the game FOV, and never clips into a wall.
+	FirstPersonCamera->bEnableFirstPersonFieldOfView = true;
+	FirstPersonCamera->FirstPersonFieldOfView = 70.f;
+	FirstPersonCamera->bEnableFirstPersonScale = true;
+	FirstPersonCamera->FirstPersonScale = 0.6f;
+
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	FirstPersonMesh->SetupAttachment(FirstPersonCamera);
 	FirstPersonMesh->SetOnlyOwnerSee(true);
 	FirstPersonMesh->SetCastShadow(false);
 	FirstPersonMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	FirstPersonMesh->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::FirstPerson;
+
+	FirstPersonWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonWeapon"));
+	FirstPersonWeapon->SetupAttachment(FirstPersonCamera);
+	FirstPersonWeapon->SetOnlyOwnerSee(true);
+	FirstPersonWeapon->SetCastShadow(false);
+	FirstPersonWeapon->SetCollisionProfileName(TEXT("NoCollision"));
+	FirstPersonWeapon->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::FirstPerson;
+	// Bottom right of the screen, pointing forward: a starting point, fine-tune it in the Blueprint.
+	FirstPersonWeapon->SetRelativeLocation(FVector(40.f, 15.f, -18.f));
 
 	// The full body is for the other players / cameras, not for us.
 	GetMesh()->SetOwnerNoSee(true);
@@ -41,6 +59,21 @@ ASP_PlayerCharacter::ASP_PlayerCharacter()
 	Movement->bOrientRotationToMovement = false;
 	Movement->MaxWalkSpeed = 900.f;
 	Movement->BrakingDecelerationWalking = 2500.f;
+}
+
+void ASP_PlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Projectile weapon: the bullets leave from the rifle seen on screen, the aim stays the crosshair.
+	if (FirstPersonWeapon && FirstPersonWeapon->GetSkinnedAsset() && FirstPersonWeapon->DoesSocketExist(WeaponMuzzleSocketName))
+	{
+		if (USP_ShootComponent* Shoot = FindComponentByClass<USP_ShootComponent>())
+		{
+			const float ViewScale = FirstPersonCamera->bEnableFirstPersonScale ? FirstPersonCamera->FirstPersonScale : 1.f;
+			Shoot->SetMuzzle(FirstPersonWeapon, WeaponMuzzleSocketName, ViewScale);
+		}
+	}
 }
 
 void ASP_PlayerCharacter::NotifyControllerChanged()

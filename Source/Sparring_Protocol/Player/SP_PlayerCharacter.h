@@ -60,7 +60,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (ClampMin = "1"))
 	float CameraHeightInterpSpeed = 15.f;
 
+	/** Socket of the first person weapon where the projectiles leave. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName WeaponMuzzleSocketName = TEXT("Muzzle");
+
 protected:
+	virtual void BeginPlay() override;
 	virtual void HandleDeath(AActor* Killer) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -69,6 +74,14 @@ protected:
 	/** Arms / weapon seen only by the player. Set the mesh in the Blueprint. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
+
+	/**
+	 * The rifle seen in first person, attached to the camera. Set the mesh (SKM_Rifle) and place it
+	 * in the Blueprint. Drawn with the First Person Field Of View / Scale of the camera, so it never
+	 * goes through the walls. With a projectile weapon, the bullets leave from its muzzle.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USkeletalMeshComponent> FirstPersonWeapon;
 
 private:
 	void Move(const FInputActionValue& Value);

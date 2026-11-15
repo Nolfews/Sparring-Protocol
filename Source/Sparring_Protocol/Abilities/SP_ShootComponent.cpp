@@ -96,9 +96,29 @@ void USP_ShootComponent::FireOnceFrom(const FVector& MuzzleLocation)
 	FireShotFrom(MuzzleLocation);
 }
 
+void USP_ShootComponent::SetMuzzle(USceneComponent* InMuzzleComponent, FName InMuzzleSocketName, float InViewScale)
+{
+	MuzzleComponent = InMuzzleComponent;
+	MuzzleSocketName = InMuzzleSocketName;
+	MuzzleViewScale = FMath::Clamp(InViewScale, 0.001f, 1.f);
+}
+
 void USP_ShootComponent::FireShot()
 {
-	FireShotFrom(TOptional<FVector>());
+	const USceneComponent* Muzzle = MuzzleComponent.Get();
+	if (!Muzzle || !GetCharacter())
+	{
+		FireShotFrom(TOptional<FVector>());
+		return;
+	}
+
+	FVector ViewLocation;
+	FRotator ViewRotation;
+	GetAimViewPoint(ViewLocation, ViewRotation);
+
+	// A first person weapon is drawn scaled toward the camera: the bullet leaves where the muzzle is seen.
+	const FVector SocketLocation = Muzzle->GetSocketLocation(MuzzleSocketName);
+	FireShotFrom(ViewLocation + (SocketLocation - ViewLocation) * MuzzleViewScale);
 }
 
 void USP_ShootComponent::FireShotFrom(const TOptional<FVector>& MuzzleLocation)
@@ -136,7 +156,13 @@ void USP_ShootComponent::FireShotFrom(const TOptional<FVector>& MuzzleLocation)
 		// Projectile weapon: the trace only finds the aim point, the bullet deals the damage.
 		if (ProjectileClass)
 		{
-			SpawnProjectile(MuzzleLocation.Get(Start), TraceEnd);
+			// The muzzle is in front of the eyes: when the aim hits something closer (a wall in the face),
+			// the bullet leaves from the eyes, never from the other side of the wall.
+			const bool bMuzzleBehindHit = MuzzleLocation.IsSet() && bHit
+				&& Hit.Distance < FVector::Dist(Start, MuzzleLocation.GetValue());
+			const FVector SpawnLocation = bMuzzleBehindHit ? Start : MuzzleLocation.Get(Start);
+
+			SpawnProjectile(SpawnLocation, TraceEnd);
 			continue;
 		}
 
