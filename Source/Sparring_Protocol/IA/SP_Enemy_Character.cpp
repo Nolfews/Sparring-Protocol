@@ -68,6 +68,8 @@ void ASP_Enemy_Character::BeginPlay()
 		}
 	}
 
+	SetOutlineVisible(bOutlined);
+
 	// The animation decides WHEN a shot leaves (AnimNotify), the shoot ability decides WHAT it does.
 	if (Attack)
 	{
@@ -86,6 +88,8 @@ void ASP_Enemy_Character::HandleAttackFired()
 void ASP_Enemy_Character::HandleDeath(AActor* Killer)
 {
 	Super::HandleDeath(Killer);
+
+	SetOutlineVisible(false);
 
 	if (Attack)
 	{
@@ -107,6 +111,29 @@ void ASP_Enemy_Character::HandleDeath(AActor* Killer)
 		{
 			Brain->StopLogic(TEXT("Enemy dead"));
 		}
+	}
+}
+
+void ASP_Enemy_Character::Revive()
+{
+	Super::Revive();
+
+	SetOutlineVisible(bOutlined);
+}
+
+void ASP_Enemy_Character::SetOutlineVisible(bool bVisible)
+{
+	// The visible body: the robot when there is one, else the default mesh.
+	USkeletalMeshComponent* Body = (VisualMesh && VisualMesh->GetSkeletalMeshAsset()) ? VisualMesh.Get() : GetMesh();
+	if (Body)
+	{
+		Body->SetRenderCustomDepth(bVisible);
+	}
+
+	// The rifle is part of the silhouette (a hidden rifle draws nothing anyway).
+	if (Rifle)
+	{
+		Rifle->SetRenderCustomDepth(bVisible);
 	}
 }
 

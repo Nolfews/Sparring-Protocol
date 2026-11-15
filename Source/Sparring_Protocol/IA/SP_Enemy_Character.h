@@ -60,6 +60,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName VisualRifleSocketName = TEXT("RifleGrip");
 
+	/** The enemy spawns (and revives) with its outline. Dead = no outline. */
+	UPROPERTY(EditDefaultsOnly, Category = "Outline")
+	bool bOutlined = true;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName RifleMuzzleSocketName = TEXT("Muzzle");
 
@@ -74,8 +78,17 @@ protected:
 	UFUNCTION()
 	void HandleAttackFired();
 
-public:	
+public:
 	ASP_Enemy_Character();
+
+	virtual void Revive() override;
+
+	/**
+	 * Shows or hides the outline. It writes the visible body and the rifle into the custom depth,
+	 * the outline post process of the player camera draws the edges of what it finds there.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Outline")
+	void SetOutlineVisible(bool bVisible);
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

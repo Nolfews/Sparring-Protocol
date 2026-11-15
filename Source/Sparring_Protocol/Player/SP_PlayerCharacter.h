@@ -7,6 +7,7 @@
 class UCameraComponent;
 class UInputAction;
 class UInputMappingContext;
+class UMaterialInterface;
 class USkeletalMeshComponent;
 struct FInputActionValue;
 
@@ -59,6 +60,13 @@ public:
 	/** Speed of the camera going down / up when sliding. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (ClampMin = "1"))
 	float CameraHeightInterpSpeed = 15.f;
+
+	/**
+	 * Post process material added to the camera (M_PP_Outline): draws the outline of everything
+	 * written into the custom depth (the enemies). On the camera, so it works in every level.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<UMaterialInterface> OutlineMaterial;
 
 	/** Socket of the first person weapon where the projectiles leave. */
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")

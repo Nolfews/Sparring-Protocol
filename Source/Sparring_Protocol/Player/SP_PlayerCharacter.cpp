@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "Materials/MaterialInterface.h"
 
 ASP_PlayerCharacter::ASP_PlayerCharacter()
 {
@@ -64,6 +65,11 @@ ASP_PlayerCharacter::ASP_PlayerCharacter()
 void ASP_PlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (OutlineMaterial)
+	{
+		FirstPersonCamera->PostProcessSettings.AddBlendable(OutlineMaterial, 1.f);
+	}
 
 	// Projectile weapon: the bullets leave from the rifle seen on screen, the aim stays the crosshair.
 	if (FirstPersonWeapon && FirstPersonWeapon->GetSkinnedAsset() && FirstPersonWeapon->DoesSocketExist(WeaponMuzzleSocketName))
