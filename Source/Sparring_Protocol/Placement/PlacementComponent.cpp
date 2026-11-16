@@ -156,6 +156,7 @@ void UPlacementComponent::EnterPlacementMode()
 	LastReason = EPlacementFailReason::None;
 	bPlacementActive = true;
 	SetComponentTickEnabled(true);
+	OnSelectionChanged.Broadcast(GetCurrentDefinition(), GetEffectiveTurns(GetCurrentDefinition()));
 }
 
 void UPlacementComponent::ExitPlacementMode()
@@ -238,6 +239,7 @@ void UPlacementComponent::RotateGhost()
 	if (bPlacementActive)
 	{
 		QuarterTurns = (QuarterTurns + 1) % 4;
+		OnSelectionChanged.Broadcast(GetCurrentDefinition(), GetEffectiveTurns(GetCurrentDefinition()));
 	}
 }
 
@@ -247,6 +249,7 @@ void UPlacementComponent::CycleDefinition()
 	{
 		CurrentDefinitionIndex = (CurrentDefinitionIndex + 1) % AvailableDefinitions.Num();
 		QuarterTurns = 0;
+		OnSelectionChanged.Broadcast(GetCurrentDefinition(), GetEffectiveTurns(GetCurrentDefinition()));
 	}
 }
 
