@@ -1,6 +1,7 @@
 #include "Game/GameFlowManager.h"
 #include "Arena/ArenaManager.h"
 #include "Placement/PlaceableDefinition.h"
+#include "Blueprint/UserWidget.h"
 #include "Arena/ArenaSpawnPoint.h"
 #include "AIController.h"
 #include "BrainComponent.h"
@@ -65,6 +66,12 @@ void AGameFlowManager::BeginPlay()
 	}
 
 	BindDebugInput();
+
+	if (HUDWidgetClass)
+	{
+		// Next tick, scheduled before StartRun: the HUD exists when the first step begins.
+		GetWorldTimerManager().SetTimerForNextTick(this, &AGameFlowManager::CreateHUD);
+	}
 
 	if (bAutoStartRun)
 	{
@@ -439,6 +446,21 @@ void AGameFlowManager::Debug_ResetTutorials()
 	}
 }
 
+void AGameFlowManager::CreateHUD()
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	if (!PC || !HUDWidgetClass || HUDWidget)
+	{
+		return;
+	}
+
+	HUDWidget = CreateWidget<UUserWidget>(PC, HUDWidgetClass);
+	if (HUDWidget)
+	{
+		HUDWidget->AddToViewport(0);
+	}
+}
+
 void AGameFlowManager::BindDebugInput()
 {
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
@@ -459,7 +481,7 @@ void AGameFlowManager::BindDebugInput()
 
 void AGameFlowManager::RefreshHud() const
 {
-	if (!GEngine)
+	if (!GEngine || !bShowDebugHud)
 	{
 		return;
 	}
