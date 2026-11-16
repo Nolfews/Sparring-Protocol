@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{46B65E36-E098-4F68-86EB-A8DEFEC45F82}",
     "Language": "SFX",
-    "Hash": "{2A68002E-93C0-BF44-4563-7BE6BF01CEA7}",
+    "Hash": "{B6CA7B41-002E-D291-ABF8-9A7F4D253FCB}",
     "ObjectPath": "Play_MX_Victory",
     "ShortName": "Play_MX_Victory",
     "Path": "Event/Play_MX_Victory.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{E1E6A8D7-EB00-7214-0100-D53011C2F2EA}"
+  "FileHash": "{B0B13071-CC48-3381-A8F5-7911FADCA172}"
  }
 }

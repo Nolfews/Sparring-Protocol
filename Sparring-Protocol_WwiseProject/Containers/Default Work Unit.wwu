@@ -698,9 +698,6 @@
 					</ObjectLists>
 				</MusicPlaylistContainer>
 				<MusicSegment Name="MX_Stinger_LevelUp" ID="{9EDAEB15-5F55-4EAA-9E76-5B93ED80C876}" ShortID="677688546">
-					<PropertyList>
-						<Property Name="ListenerRelativeRouting" Type="bool" Value="False"/>
-					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{FD468C91-2809-4F26-9841-92D68DB4834E}"/>
@@ -770,7 +767,6 @@
 				<MusicSegment Name="MX_Stinger_Death" ID="{CBA53570-F9A1-4F56-A7D0-DCC63343DAA1}" ShortID="260105262">
 					<PropertyList>
 						<Property Name="EndPosition" Type="Real64" Value="4363.64583333333"/>
-						<Property Name="ListenerRelativeRouting" Type="bool" Value="False"/>
 					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
@@ -841,7 +837,6 @@
 				<MusicSegment Name="MX_Stinger_Victory" ID="{98E34998-9607-4700-B7EA-A7DDDADCF907}" ShortID="318423847">
 					<PropertyList>
 						<Property Name="EndPosition" Type="Real64" Value="4363.64583333333"/>
-						<Property Name="ListenerRelativeRouting" Type="bool" Value="False"/>
 					</PropertyList>
 					<ReferenceList>
 						<Reference Name="Conversion">
