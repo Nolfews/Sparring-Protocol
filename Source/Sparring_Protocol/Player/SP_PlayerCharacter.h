@@ -8,6 +8,7 @@ class UCameraComponent;
 class UInputAction;
 class UInputMappingContext;
 class USkeletalMeshComponent;
+class USP_PlayerMenusComponent;
 struct FInputActionValue;
 
 /**
@@ -69,6 +70,10 @@ protected:
 	/** Arms / weapon seen only by the player. Set the mesh in the Blueprint. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
+
+	/** Pause menu (pause key) and death screen (end of the run). */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USP_PlayerMenusComponent> Menus;
 
 private:
 	void Move(const FInputActionValue& Value);
