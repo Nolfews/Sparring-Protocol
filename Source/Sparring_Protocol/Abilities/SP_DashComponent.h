@@ -38,6 +38,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Dash")
 	int32 GetCharges() const { return CurrentCharges; }
 
+	/** Progress (0..1) of the charge being recovered. 0 when every charge is full. Used by the HUD. */
+	UFUNCTION(BlueprintPure, Category = "Dash")
+	float GetRechargeProgress() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
