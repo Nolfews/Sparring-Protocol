@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{5143F39A-4148-4C8C-892C-3E65F13221D5}",
     "Language": "SFX",
-    "Hash": "{45AEC9AD-18EF-E45B-AC06-1C6CFC64BDE5}",
+    "Hash": "{7301A3BF-1C6F-D491-EC8E-9BFB7EC021A8}",
     "ObjectPath": "Play_MX_Death",
     "ShortName": "Play_MX_Death",
     "Path": "Event/Play_MX_Death.bnk",
@@ -43,6 +43,6 @@
     ]
    }
   ],
-  "FileHash": "{54A0DA3E-203D-A823-4828-39514D382515}"
+  "FileHash": "{7B431121-BBC7-CC66-D4AB-1616CC51A455}"
  }
 }
