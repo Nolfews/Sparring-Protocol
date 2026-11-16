@@ -10,7 +10,7 @@
     "Type": "Event",
     "GUID": "{B58D7168-2F4E-4CE7-9980-9677B70ECDB6}",
     "Language": "SFX",
-    "Hash": "{1DA2B431-6247-CD02-2BE2-F063E19E8682}",
+    "Hash": "{E086FD26-55E0-AE9B-51D8-25F2C69B5545}",
     "ObjectPath": "Play_MX_Combat",
     "ShortName": "Play_MX_Combat",
     "Path": "Event/Play_MX_Combat.bnk",
@@ -182,6 +182,6 @@
     ]
    }
   ],
-  "FileHash": "{D627B385-3FC6-FE5D-42F7-67071E05A93F}"
+  "FileHash": "{EFE54B7E-9AE1-E554-E5D7-F53BA25CC49E}"
  }
 }
