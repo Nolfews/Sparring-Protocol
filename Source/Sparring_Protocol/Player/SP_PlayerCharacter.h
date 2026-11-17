@@ -7,6 +7,7 @@
 class UCameraComponent;
 class UInputAction;
 class UInputMappingContext;
+class UMaterialInterface;
 class USkeletalMeshComponent;
 class USP_PlayerMenusComponent;
 struct FInputActionValue;
@@ -61,7 +62,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (ClampMin = "1"))
 	float CameraHeightInterpSpeed = 15.f;
 
+	/**
+	 * Post process material added to the camera (M_PP_Outline): draws the outline of everything
+	 * written into the custom depth (the enemies). On the camera, so it works in every level.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<UMaterialInterface> OutlineMaterial;
+
+	/** Socket of the first person weapon where the projectiles leave. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName WeaponMuzzleSocketName = TEXT("Muzzle");
+
 protected:
+	virtual void BeginPlay() override;
 	virtual void HandleDeath(AActor* Killer) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -71,6 +84,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMesh;
 
+	/**
+	 * The rifle seen in first person, attached to the camera. Set the mesh (SKM_Rifle) and place it
+	 * in the Blueprint. Drawn with the First Person Field Of View / Scale of the camera, so it never
+	 * goes through the walls. With a projectile weapon, the bullets leave from its muzzle.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USkeletalMeshComponent> FirstPersonWeapon;
+  
 	/** Pause menu (pause key) and death screen (end of the run). */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USP_PlayerMenusComponent> Menus;

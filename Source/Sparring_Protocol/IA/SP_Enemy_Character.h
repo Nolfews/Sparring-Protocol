@@ -43,6 +43,27 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USkeletalMeshComponent> Rifle;
 
+	/**
+	 * The visible body (the robot), attached to Mesh. Its Anim Blueprint copies the pose of Mesh
+	 * every frame (Retarget Pose From Mesh). When it has a mesh, Mesh becomes an invisible driver
+	 * that keeps playing ABP_Enemy, the montages, the notifies and the sockets (rifle, muzzle).
+	 * Empty = Mesh stays visible, as before.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USkeletalMeshComponent> VisualMesh;
+
+	/**
+	 * Socket of VisualMesh that holds the rifle (added on hand_r of the visual mesh skeleton).
+	 * When it exists, the rifle follows the visible hand instead of the hidden driver hand.
+	 * Missing = the rifle stays on HandGrip_R of Mesh.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName VisualRifleSocketName = TEXT("RifleGrip");
+
+	/** The enemy spawns (and revives) with its outline. Dead = no outline. */
+	UPROPERTY(EditDefaultsOnly, Category = "Outline")
+	bool bOutlined = true;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName RifleMuzzleSocketName = TEXT("Muzzle");
 
@@ -57,8 +78,17 @@ protected:
 	UFUNCTION()
 	void HandleAttackFired();
 
-public:	
+public:
 	ASP_Enemy_Character();
+
+	virtual void Revive() override;
+
+	/**
+	 * Shows or hides the outline. It writes the visible body and the rifle into the custom depth,
+	 * the outline post process of the player camera draws the edges of what it finds there.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Outline")
+	void SetOutlineVisible(bool bVisible);
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

@@ -1,0 +1,46 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Windows",
+  "BasePlatform": "Windows",
+  "SchemaVersion": "16",
+  "SoundBankVersion": "172",
+  "SoundBanks": [
+   {
+    "Id": "1022453873",
+    "Type": "Event",
+    "GUID": "{83730D89-DAB8-4DF7-B8C1-89EB5FFDF560}",
+    "Language": "SFX",
+    "Hash": "{109D3A96-5CF2-33BF-E800-825DC61944FB}",
+    "ObjectPath": "Play_MX_Menu",
+    "ShortName": "Play_MX_Menu",
+    "Path": "Event/Play_MX_Menu.bnk",
+    "Media": [
+     {
+      "Id": "903173489",
+      "Language": "SFX",
+      "Streaming": "false",
+      "Location": "Loose",
+      "ShortName": "Carpenter_Brut_-_Turbo_Killer.wav",
+      "Path": "Media/903173489.wem",
+      "CachePath": "AE/{AE19A93C-124B-AF0C-9547-C92A4C652B7B}.wem"
+     }
+    ],
+    "Events": [
+     {
+      "Id": "1022453873",
+      "Name": "Play_MX_Menu",
+      "ObjectPath": "\\Events\\Default Work Unit\\Play_MX_Menu",
+      "GUID": "{83730D89-DAB8-4DF7-B8C1-89EB5FFDF560}",
+      "DurationType": "Infinite",
+      "MediaRefs": [
+       {
+        "Id": "903173489"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "FileHash": "{CAC3CB31-14C8-CC5E-81F6-CEECC9F7B036}"
+ }
+}

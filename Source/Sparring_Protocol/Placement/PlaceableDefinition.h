@@ -6,6 +6,7 @@
 
 class APlaceableElement;
 class UStaticMesh;
+class UTexture2D;
 
 /** One Data Asset per placeable element type. Adding an element = adding an asset. */
 UCLASS(BlueprintType)
@@ -24,6 +25,10 @@ public:
 	/** Mesh used by the placement ghost (later). */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
 	TObjectPtr<UStaticMesh> PreviewMesh;
+
+	/** 2D icon of the shape, shown by the build HUD. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
+	TObjectPtr<UTexture2D> Icon;
 
 	/** Size in cells (X, Y, Z) before rotation. The pivot of the spawned actor must be the CENTER of this box. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Grid")

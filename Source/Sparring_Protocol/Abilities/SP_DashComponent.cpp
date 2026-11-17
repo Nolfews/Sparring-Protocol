@@ -110,6 +110,22 @@ void USP_DashComponent::OnAbilityEnd(bool bWasCancelled)
 	}
 }
 
+float USP_DashComponent::GetRechargeProgress() const
+{
+	const UWorld* World = GetWorld();
+	if (!World || CurrentCharges >= MaxCharges)
+	{
+		return 0.f;
+	}
+
+	const FTimerManager& Timers = World->GetTimerManager();
+	if (!Timers.IsTimerActive(RefillTimer))
+	{
+		return 0.f;
+	}
+	return FMath::Clamp(Timers.GetTimerElapsed(RefillTimer) / ChargeRefillTime, 0.f, 1.f);
+}
+
 void USP_DashComponent::RefillCharge()
 {
 	CurrentCharges = FMath::Min(CurrentCharges + 1, MaxCharges);
