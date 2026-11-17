@@ -12,6 +12,9 @@
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
 #include "Materials/MaterialInterface.h"
+#include "UI/SP_PlayerMenusComponent.h"
+#include "Engine/GameInstance.h"
+#include "Score/SP_SettingsSubsystem.h"
 
 ASP_PlayerCharacter::ASP_PlayerCharacter()
 {
@@ -47,6 +50,8 @@ ASP_PlayerCharacter::ASP_PlayerCharacter()
 	FirstPersonWeapon->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::FirstPerson;
 	// Bottom right of the screen, pointing forward: a starting point, fine-tune it in the Blueprint.
 	FirstPersonWeapon->SetRelativeLocation(FVector(40.f, 15.f, -18.f));
+
+	Menus = CreateDefaultSubobject<USP_PlayerMenusComponent>(TEXT("Menus"));
 
 	// The full body is for the other players / cameras, not for us.
 	GetMesh()->SetOwnerNoSee(true);
@@ -133,6 +138,12 @@ void ASP_PlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	{
 		Ability->BindInput(EnhancedInput);
 	}
+
+	// Pause key.
+	if (Menus)
+	{
+		Menus->BindInput(EnhancedInput);
+	}
 }
 
 void ASP_PlayerCharacter::Move(const FInputActionValue& Value)
@@ -145,8 +156,21 @@ void ASP_PlayerCharacter::Move(const FInputActionValue& Value)
 void ASP_PlayerCharacter::Look(const FInputActionValue& Value)
 {
 	const FVector2D Input = Value.Get<FVector2D>();
-	AddControllerYawInput(Input.X);
-	AddControllerPitchInput(Input.Y);
+
+	// Player settings (Settings menu): sensitivity and invert Y.
+	float Sensitivity = 1.f;
+	float PitchSign = 1.f;
+	if (const UGameInstance* GameInstance = GetGameInstance())
+	{
+		if (const USP_SettingsSubsystem* Settings = GameInstance->GetSubsystem<USP_SettingsSubsystem>())
+		{
+			Sensitivity = Settings->GetMouseSensitivity();
+			PitchSign = Settings->GetInvertY() ? -1.f : 1.f;
+		}
+	}
+
+	AddControllerYawInput(Input.X * Sensitivity);
+	AddControllerPitchInput(Input.Y * Sensitivity * PitchSign);
 }
 
 void ASP_PlayerCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)

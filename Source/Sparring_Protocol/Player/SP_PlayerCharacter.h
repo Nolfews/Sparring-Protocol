@@ -9,6 +9,7 @@ class UInputAction;
 class UInputMappingContext;
 class UMaterialInterface;
 class USkeletalMeshComponent;
+class USP_PlayerMenusComponent;
 struct FInputActionValue;
 
 /**
@@ -90,6 +91,10 @@ protected:
 	 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USkeletalMeshComponent> FirstPersonWeapon;
+  
+	/** Pause menu (pause key) and death screen (end of the run). */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USP_PlayerMenusComponent> Menus;
 
 private:
 	void Move(const FInputActionValue& Value);

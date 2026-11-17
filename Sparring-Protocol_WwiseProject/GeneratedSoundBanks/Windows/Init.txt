@@ -10,8 +10,15 @@ State	ID	Name	State Group			Notes
 	2678230381	Level2	AI_Level			
 	2678230382	Level1	AI_Level			
 
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	3194824364	Volume_Effects			\Default Work Unit\Volume_Effects	
+	3695994288	Volume_Master			\Default Work Unit\Volume_Master	
+	3891337659	Volume_Music			\Default Work Unit\Volume_Music	
+
 Audio Bus	ID	Name			Wwise Object Path	Notes
+	1942696649	Effects			\Default Work Unit\Main Audio Bus\Effects	
 	2246998526	Main Audio Bus			\Default Work Unit\Main Audio Bus	
+	3991942870	Music			\Default Work Unit\Main Audio Bus\Music	
 
 Audio Devices	ID	Name	Type				Notes
 	2317455096	No_Output	No Output			
