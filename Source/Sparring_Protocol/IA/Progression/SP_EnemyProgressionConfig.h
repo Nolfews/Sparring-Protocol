@@ -159,7 +159,7 @@ public:
     float BaseRunSpeed = 500.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Base", meta = (ClampMin = "0"))
-    float BaseSightRadius = 2000.f;
+    float BaseSightRadius = 3500.f;
 
     /** The player is lost this far beyond the sight radius. */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Base", meta = (ClampMin = "0"))

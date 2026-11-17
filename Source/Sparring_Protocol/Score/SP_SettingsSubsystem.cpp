@@ -68,15 +68,13 @@ void USP_SettingsSubsystem::SetInvertY(bool bValue)
 
 float USP_SettingsSubsystem::GetVolume(ESPVolumeChannel Channel) const
 {
-	if (!Data)
-	{
-		return 100.f;
-	}
+	// No save loaded yet: the default values of a new save.
+	const USP_SettingsSaveGame* Settings = Data ? Data.Get() : GetDefault<USP_SettingsSaveGame>();
 	switch (Channel)
 	{
-	case ESPVolumeChannel::Music: return Data->MusicVolume;
-	case ESPVolumeChannel::Effects: return Data->EffectsVolume;
-	default: return Data->MasterVolume;
+	case ESPVolumeChannel::Music: return Settings->MusicVolume;
+	case ESPVolumeChannel::Effects: return Settings->EffectsVolume;
+	default: return Settings->MasterVolume;
 	}
 }
 

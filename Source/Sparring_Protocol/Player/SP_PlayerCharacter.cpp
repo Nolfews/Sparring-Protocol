@@ -18,7 +18,7 @@
 
 ASP_PlayerCharacter::ASP_PlayerCharacter()
 {
-	// Tick is only used to smooth the camera height when sliding.
+	// Tick smooths the camera height when sliding and springs the weapon recoil back.
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCapsuleComponent()->InitCapsuleSize(34.f, 96.f);
@@ -76,15 +76,59 @@ void ASP_PlayerCharacter::BeginPlay()
 		FirstPersonCamera->PostProcessSettings.AddBlendable(OutlineMaterial, 1.f);
 	}
 
+	USP_ShootComponent* Shoot = FindComponentByClass<USP_ShootComponent>();
+
 	// Projectile weapon: the bullets leave from the rifle seen on screen, the aim stays the crosshair.
-	if (FirstPersonWeapon && FirstPersonWeapon->GetSkinnedAsset() && FirstPersonWeapon->DoesSocketExist(WeaponMuzzleSocketName))
+	if (Shoot && FirstPersonWeapon && FirstPersonWeapon->GetSkinnedAsset() && FirstPersonWeapon->DoesSocketExist(WeaponMuzzleSocketName))
 	{
-		if (USP_ShootComponent* Shoot = FindComponentByClass<USP_ShootComponent>())
-		{
-			const float ViewScale = FirstPersonCamera->bEnableFirstPersonScale ? FirstPersonCamera->FirstPersonScale : 1.f;
-			Shoot->SetMuzzle(FirstPersonWeapon, WeaponMuzzleSocketName, ViewScale);
-		}
+		const float ViewScale = FirstPersonCamera->bEnableFirstPersonScale ? FirstPersonCamera->FirstPersonScale : 1.f;
+		Shoot->SetMuzzle(FirstPersonWeapon, WeaponMuzzleSocketName, ViewScale);
 	}
+
+	// Recoil: the rest position is the one set in the Blueprint.
+	if (FirstPersonWeapon)
+	{
+		WeaponRestTransform = FirstPersonWeapon->GetRelativeTransform();
+	}
+	if (Shoot)
+	{
+		Shoot->OnShotFired.AddDynamic(this, &ASP_PlayerCharacter::HandleShotFired);
+	}
+}
+
+void ASP_PlayerCharacter::HandleShotFired()
+{
+	// Each shot adds to the current recoil (bursts stack up), within the limits.
+	RecoilOffset.X = FMath::Max(RecoilOffset.X - RecoilKickBack, -RecoilMaxKickBack);
+	RecoilRotation.Pitch = FMath::Min(RecoilRotation.Pitch + RecoilPitch, RecoilMaxPitch);
+	RecoilRotation.Yaw = FMath::Clamp(RecoilRotation.Yaw + FMath::FRandRange(-RecoilYawRandom, RecoilYawRandom),
+		-RecoilYawRandom * 2.f, RecoilYawRandom * 2.f);
+	bRecoilActive = true;
+}
+
+void ASP_PlayerCharacter::UpdateRecoil(float DeltaSeconds)
+{
+	if (!bRecoilActive || !FirstPersonWeapon)
+	{
+		return;
+	}
+
+	// Spring back to rest.
+	RecoilOffset = FMath::VInterpTo(RecoilOffset, FVector::ZeroVector, DeltaSeconds, RecoilReturnSpeed);
+	RecoilRotation = FMath::RInterpTo(RecoilRotation, FRotator::ZeroRotator, DeltaSeconds, RecoilReturnSpeed);
+
+	if (RecoilOffset.IsNearlyZero(0.01f) && RecoilRotation.IsNearlyZero(0.01f))
+	{
+		RecoilOffset = FVector::ZeroVector;
+		RecoilRotation = FRotator::ZeroRotator;
+		bRecoilActive = false;
+	}
+
+	// The recoil is in camera space (back = toward the eyes, pitch = barrel up), whatever the
+	// rotation the weapon mesh needed in the Blueprint: it is applied on top of the rest transform.
+	const FQuat Rotation = RecoilRotation.Quaternion() * WeaponRestTransform.GetRotation();
+	const FVector Location = WeaponRestTransform.GetLocation() + RecoilOffset;
+	FirstPersonWeapon->SetRelativeLocationAndRotation(Location, Rotation);
 }
 
 void ASP_PlayerCharacter::NotifyControllerChanged()
@@ -204,6 +248,8 @@ void ASP_PlayerCharacter::Tick(float DeltaSeconds)
 		Location.Z = FMath::FInterpTo(Location.Z, TargetHeight, DeltaSeconds, CameraHeightInterpSpeed);
 		FirstPersonCamera->SetRelativeLocation(Location);
 	}
+
+	UpdateRecoil(DeltaSeconds);
 }
 
 void ASP_PlayerCharacter::Revive()

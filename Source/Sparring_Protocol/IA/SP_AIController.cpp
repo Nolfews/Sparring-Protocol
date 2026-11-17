@@ -84,6 +84,7 @@ void ASP_AIController::ApplyLevelData(const FSPEnemyLevelData& LevelData)
     {
         SightConfig->SightRadius = LevelData.SightRadius;
         SightConfig->LoseSightRadius = LevelData.LoseSightRadius;
+        SightConfig->PeripheralVisionAngleDegrees = SightHalfAngle;
 
         if (UAIPerceptionComponent* Perception = GetPerceptionComponent())
         {

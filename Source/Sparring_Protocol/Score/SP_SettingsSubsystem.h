@@ -26,8 +26,9 @@ public:
 	UPROPERTY()
 	bool bInvertY = false;
 
+	/** Half volume on a first launch: the game is loud at 100. */
 	UPROPERTY()
-	float MasterVolume = 100.f;
+	float MasterVolume = 50.f;
 
 	UPROPERTY()
 	float MusicVolume = 100.f;

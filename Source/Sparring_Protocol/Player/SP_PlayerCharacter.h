@@ -73,6 +73,31 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName WeaponMuzzleSocketName = TEXT("Muzzle");
 
+	// ---- Recoil: visual only, the bullets still go under the crosshair ----------------------------
+
+	/** The weapon moves back toward the camera on each shot. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Recoil", meta = (ClampMin = "0", Units = "cm"))
+	float RecoilKickBack = 3.f;
+
+	/** The barrel goes up on each shot. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Recoil", meta = (ClampMin = "0", Units = "Degrees"))
+	float RecoilPitch = 3.f;
+
+	/** Random left / right on each shot, between -this and +this. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Recoil", meta = (ClampMin = "0", Units = "Degrees"))
+	float RecoilYawRandom = 0.8f;
+
+	/** How fast the weapon goes back to rest. Higher = snappier. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Recoil", meta = (ClampMin = "1"))
+	float RecoilReturnSpeed = 18.f;
+
+	/** Limits while holding the trigger, so the weapon never leaves the screen. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Recoil", meta = (ClampMin = "0", Units = "cm"))
+	float RecoilMaxKickBack = 8.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Recoil", meta = (ClampMin = "0", Units = "Degrees"))
+	float RecoilMaxPitch = 10.f;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void HandleDeath(AActor* Killer) override;
@@ -99,4 +124,19 @@ protected:
 private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+
+	/** A shot left: adds a recoil kick to the first person weapon. */
+	UFUNCTION()
+	void HandleShotFired();
+
+	/** Springs the recoil back to zero and places the weapon (rest + recoil). */
+	void UpdateRecoil(float DeltaSeconds);
+
+	/** Where the weapon was placed in the Blueprint, relative to the camera. */
+	FTransform WeaponRestTransform;
+
+	/** Current recoil, in camera space: X < 0 = toward the camera. */
+	FVector RecoilOffset = FVector::ZeroVector;
+	FRotator RecoilRotation = FRotator::ZeroRotator;
+	bool bRecoilActive = false;
 };

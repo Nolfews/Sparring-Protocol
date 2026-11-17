@@ -75,7 +75,7 @@ public:
 
 	/** Draws the impacts (red = hit something, green = nothing). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot|Debug")
-	bool bDrawDebug = true;
+	bool bDrawDebug = false;
 
 	UPROPERTY(BlueprintAssignable, Category = "Shoot|Events")
 	FSPOnShotFired OnShotFired;

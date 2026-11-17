@@ -36,6 +36,13 @@ void ASP_CombatProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// The "Projectile" preset blocks every channel, Visibility included. The AI sight, the aim trace and
+	// the obstacle checks all trace on Visibility: a bullet in flight between the enemy and the player
+	// made the enemy lose sight of him (and stop shooting when it cannot search yet).
+	// Done here and not in the constructor so a Blueprint collision override cannot bring it back.
+	Collision->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+	Collision->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+
 	// Fired by the movement component on the first blocking hit.
 	Movement->OnProjectileStop.AddDynamic(this, &ASP_CombatProjectile::HandleStop);
 }

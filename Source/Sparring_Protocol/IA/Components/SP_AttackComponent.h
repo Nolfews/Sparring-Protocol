@@ -56,9 +56,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack", meta = (ClampMin = "0"))
 	float AimHoldTime = 0.5f;
 
-	/** Draws a line from the eyes when the attack lands, to check the notify timing. */
+	/** Debug only: draws a red line from the eyes when the attack lands, to check the notify timing. */
 	UPROPERTY(EditAnywhere, Category = "Attack|Debug")
-	bool bDrawDebugAttack = true;
+	bool bDrawDebugAttack = false;
 
 private:
 	void HandleMontageEnded(UAnimMontage* Montage, bool bInterrupted);

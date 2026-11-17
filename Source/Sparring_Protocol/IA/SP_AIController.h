@@ -36,6 +36,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "AI|Perception")
 	TObjectPtr<UAISenseConfig_Sight> SightConfig;
 
+	/**
+	 * Half-angle of the sight cone: 60 = 120° in front, 90 = the whole front half, 180 = all around.
+	 * The distance comes from the progression Data Asset (Base Sight Radius + unlocks).
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception", meta = (ClampMin = "1", ClampMax = "180", Units = "Degrees"))
+	float SightHalfAngle = 80.f;
+
 	/** Blackboard key names, editable so a designer can rename keys without touching C++. */
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Blackboard")
 	FName TargetActorKey = TEXT("TargetActor");
