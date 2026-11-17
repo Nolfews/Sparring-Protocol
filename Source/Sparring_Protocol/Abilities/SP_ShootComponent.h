@@ -6,6 +6,7 @@
 #include "SP_ShootComponent.generated.h"
 
 class UDamageType;
+class USoundBase;
 class ASP_CombatProjectile;
 
 /** Fired once per shot (sound, muzzle flash, recoil, camera shake). */
@@ -61,6 +62,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot|Projectile", meta = (ClampMin = "100", Units = "CentimetersPerSecond"))
 	float ProjectileSpeed = 3000.f;
 
+	/**
+	 * Played once per shot (not per pellet). The local player hears it in 2D (no panning on his own gun),
+	 * everybody else hears it at the muzzle: set an attenuation in the Sound Cue so the distance counts.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot|Sound")
+	TObjectPtr<USoundBase> FireSound;
+
+	/** Small random pitch change on each shot so automatic fire does not sound like a loop. 0 = off. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot|Sound", meta = (ClampMin = "0", ClampMax = "0.5"))
+	float FirePitchVariation = 0.05f;
+
 	/** Draws the impacts (red = hit something, green = nothing). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shoot|Debug")
 	bool bDrawDebug = true;
@@ -81,6 +93,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shoot")
 	void FireOnceFrom(const FVector& MuzzleLocation);
 
+	/**
+	 * Projectile weapon: where the bullets leave on a normal shot (the player rifle). The aim still
+	 * comes from the eyes. ViewScale: 1 = the real socket; less = pulled toward the eyes, to match
+	 * a first person weapon drawn with the camera First Person Scale.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Shoot")
+	void SetMuzzle(USceneComponent* InMuzzleComponent, FName InMuzzleSocketName, float InViewScale = 1.f);
+
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void ActivateAbility() override;
@@ -92,7 +112,12 @@ private:
 	void FireShotFrom(const TOptional<FVector>& MuzzleLocation);
 	void SpawnProjectile(const FVector& SpawnLocation, const FVector& AimPoint);
 	void GetAimViewPoint(FVector& OutLocation, FRotator& OutRotation) const;
+	void PlayFireSound(const FVector& Location) const;
 
 	double LastShotTime = -1000.0;
 	FTimerHandle FireTimer;
+
+	TWeakObjectPtr<USceneComponent> MuzzleComponent;
+	FName MuzzleSocketName;
+	float MuzzleViewScale = 1.f;
 };

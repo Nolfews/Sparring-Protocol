@@ -6,6 +6,9 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "TimerManager.h"
 
 ASP_CombatProjectile::ASP_CombatProjectile()
 {
@@ -62,5 +65,32 @@ void ASP_CombatProjectile::HandleStop(const FHitResult& ImpactResult)
 			Shooter ? Shooter->GetController() : nullptr, Shooter, DamageType);
 	}
 
+	SpawnImpactEffect(ImpactResult);
 	Destroy();
+}
+
+void ASP_CombatProjectile::SpawnImpactEffect(const FHitResult& ImpactResult) const
+{
+	if (!ImpactEffect)
+	{
+		return;
+	}
+
+	// The effect lives in the world, not on the bullet (destroyed right after).
+	// Its up axis follows the surface: the sparks fly out of the wall, like out of the floor in the pack demo.
+	const FRotator Rotation = FRotationMatrix::MakeFromZ(ImpactResult.ImpactNormal).Rotator();
+	UNiagaraComponent* Effect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		this, ImpactEffect, ImpactResult.ImpactPoint, Rotation, FVector(ImpactEffectScale));
+
+	if (!Effect || ImpactEffectDuration <= 0.f)
+	{
+		return;
+	}
+
+	// A looping system would emit forever: stop it after a short burst. It destroys itself
+	// once its last particle dies (auto destroy). Weak lambda = nothing happens if it is already gone.
+	FTimerHandle StopTimer;
+	GetWorldTimerManager().SetTimer(StopTimer,
+		FTimerDelegate::CreateWeakLambda(Effect, [Effect]() { Effect->Deactivate(); }),
+		ImpactEffectDuration, false);
 }
