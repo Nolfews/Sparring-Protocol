@@ -4,6 +4,7 @@
 #include "UI/SP_MenuScreen.h"
 #include "SP_MainMenuScreen.generated.h"
 
+class UAkAudioEvent;
 class USP_MenuButton;
 
 /**
@@ -28,10 +29,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Main Menu")
 	TSubclassOf<USP_MenuScreen> SettingsScreenClass;
 
+	/** Wwise event started when the menu opens (menu music). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Main Menu|Music")
+	TSoftObjectPtr<UAkAudioEvent> MenuMusicEvent = TSoftObjectPtr<UAkAudioEvent>(FSoftObjectPath(TEXT("/Game/WwiseAudio/Events/Default_Work_Unit/Play_MX_Menu.Play_MX_Menu")));
+
+	/** Wwise event that stops the menu music (with its fade out) when leaving the menu. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Main Menu|Music")
+	TSoftObjectPtr<UAkAudioEvent> StopMenuMusicEvent = TSoftObjectPtr<UAkAudioEvent>(FSoftObjectPath(TEXT("/Game/WwiseAudio/Events/Default_Work_Unit/Stop_MX_Menu.Stop_MX_Menu")));
+
 protected:
 	virtual void NativeOnInitialized() override;
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	virtual UWidget* GetDefaultFocusWidget() const override;
 
 	UPROPERTY(meta = (BindWidget))
@@ -58,4 +68,10 @@ private:
 
 	UFUNCTION()
 	void HandleQuit();
+
+	void PlayMenuMusic();
+	void StopMenuMusic();
+	static void PostMenuEvent(const TSoftObjectPtr<UAkAudioEvent>& Event);
+
+	bool bMusicPlaying = false;
 };
