@@ -1,5 +1,7 @@
 #include "UI/SP_MainMenuScreen.h"
 
+#include "AkAudioEvent.h"
+#include "AkGameplayStatics.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/SP_LeaderboardScreen.h"
@@ -41,6 +43,13 @@ void USP_MainMenuScreen::NativeConstruct()
 
 	ActivateMenuInput(false);
 	FocusDefault();
+	PlayMenuMusic();
+}
+
+void USP_MainMenuScreen::NativeDestruct()
+{
+	StopMenuMusic();
+	Super::NativeDestruct();
 }
 
 UWidget* USP_MainMenuScreen::GetDefaultFocusWidget() const
@@ -52,6 +61,7 @@ void USP_MainMenuScreen::HandlePlay()
 {
 	// The input mode survives the level change: give the controls back to the game first.
 	ActivateGameInput();
+	StopMenuMusic();
 	UGameplayStatics::OpenLevel(this, ArenaLevelName);
 }
 
@@ -63,6 +73,37 @@ void USP_MainMenuScreen::HandleLeaderboard()
 void USP_MainMenuScreen::HandleSettings()
 {
 	OpenChildScreen(SettingsScreenClass);
+}
+
+void USP_MainMenuScreen::PlayMenuMusic()
+{
+	if (!bMusicPlaying)
+	{
+		PostMenuEvent(MenuMusicEvent);
+		bMusicPlaying = true;
+	}
+}
+
+void USP_MainMenuScreen::StopMenuMusic()
+{
+	if (bMusicPlaying)
+	{
+		PostMenuEvent(StopMenuMusicEvent);
+		bMusicPlaying = false;
+	}
+}
+
+void USP_MainMenuScreen::PostMenuEvent(const TSoftObjectPtr<UAkAudioEvent>& Event)
+{
+	// No actor: the music is played as an ambient (2D) sound, like the combat music.
+	if (UAkAudioEvent* LoadedEvent = Event.LoadSynchronous())
+	{
+		UAkGameplayStatics::PostEvent(LoadedEvent, nullptr, 0, FOnAkPostEventCallback(), false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Menu music event not found: %s"), *Event.ToString());
+	}
 }
 
 void USP_MainMenuScreen::HandleQuit()

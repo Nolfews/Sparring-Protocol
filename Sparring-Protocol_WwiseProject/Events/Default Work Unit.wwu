@@ -206,6 +206,32 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_MX_Menu" ID="{83730D89-DAB8-4DF7-B8C1-89EB5FFDF560}">
+					<ChildrenList>
+						<Action Name="" ID="{DF358126-C374-49FA-A7CF-EA282346DB4A}" ShortID="247733521">
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="MX_Menu" ID="{A89CA125-9217-4E29-BE01-CE9A0AAA8DFE}" WorkUnitID="{40953C4A-9E6B-4C99-983D-4F8DD26C289D}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Stop_MX_Menu" ID="{7D97BB86-A920-495E-A87F-CFD787D3003C}">
+					<ChildrenList>
+						<Action Name="" ID="{A91E0E5B-4B99-4025-9EF0-A94F7ABA00A1}" ShortID="1005791263">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="2"/>
+								<Property Name="FadeTime" Type="Real64" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="MX_Menu" ID="{A89CA125-9217-4E29-BE01-CE9A0AAA8DFE}" WorkUnitID="{40953C4A-9E6B-4C99-983D-4F8DD26C289D}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>
