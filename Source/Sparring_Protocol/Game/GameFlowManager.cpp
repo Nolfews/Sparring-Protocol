@@ -1,6 +1,7 @@
 #include "Game/GameFlowManager.h"
 #include "Arena/ArenaManager.h"
 #include "Placement/PlaceableDefinition.h"
+#include "Blueprint/UserWidget.h"
 #include "Arena/ArenaSpawnPoint.h"
 #include "AIController.h"
 #include "BrainComponent.h"
@@ -66,6 +67,12 @@ void AGameFlowManager::BeginPlay()
 
 	BindDebugInput();
 
+	if (HUDWidgetClass)
+	{
+		// Next tick, scheduled before StartRun: the HUD exists when the first step begins.
+		GetWorldTimerManager().SetTimerForNextTick(this, &AGameFlowManager::CreateHUD);
+	}
+
 	if (bAutoStartRun)
 	{
 		// Next tick, so every other BeginPlay (placement component, arena) is done and listening.
@@ -120,7 +127,7 @@ void AGameFlowManager::StartRun()
 		return;
 	}
 
-	BeginBuildStep();
+	BeginNextStep();
 }
 
 void AGameFlowManager::CompleteCombatTutorial()
@@ -130,7 +137,20 @@ void AGameFlowManager::CompleteCombatTutorial()
 		return;
 	}
 	bCombatTutorialCompleted = true;
-	BeginBuildStep();
+	BeginNextStep();
+}
+
+void AGameFlowManager::BeginNextStep()
+{
+	// Building opens once enough rounds are won; before that, combats simply follow each other.
+	if (RoundsWon >= BuildUnlockAfterRounds)
+	{
+		BeginBuildStep();
+	}
+	else
+	{
+		StartCombatRound();
+	}
 }
 
 void AGameFlowManager::BeginBuildStep()
@@ -141,10 +161,18 @@ void AGameFlowManager::BeginBuildStep()
 	}
 
 	// The guided build phase is only the first one of a run.
-	const bool bTutorial = (RoundsWon == 0) && !(bSkipTutorials || bBuildTutorialCompleted);
+	const bool bFirstBuildOfRun = (RoundsWon == BuildUnlockAfterRounds);
+	const bool bTutorial = bFirstBuildOfRun && !(bSkipTutorials || bBuildTutorialCompleted);
 	SetState(bTutorial ? EGameFlowState::TutorialBuild : EGameFlowState::Build);
 
-	const int32 PlayerSlots = ArenaManager->BeginBuildPhase(RoundsWon);
+	if (bFirstBuildOfRun)
+	{
+		OnBuildUnlocked.Broadcast();
+	}
+
+	// The quota grows with the rounds won since the unlock, so the first build phase starts small.
+	const int32 QuotaProgress = bQuotaCountsFromUnlock ? FMath::Max(0, RoundsWon - BuildUnlockAfterRounds) : RoundsWon;
+	const int32 PlayerSlots = ArenaManager->BeginBuildPhase(QuotaProgress);
 	PlaceEnemyElements();
 
 	if (PlayerSlots <= 0)
@@ -195,7 +223,7 @@ void AGameFlowManager::NotifyRoundWon()
 		ArenaManager->AgeElements();
 	}
 
-	BeginBuildStep();
+	BeginNextStep();
 }
 
 void AGameFlowManager::NotifyPlayerDefeated()
@@ -421,6 +449,32 @@ void AGameFlowManager::Debug_LoseRound()
 	}
 }
 
+void AGameFlowManager::Debug_SkipToBuildUnlock()
+{
+	if (!CanRunDebugAction())
+	{
+		return;
+	}
+
+	if (State == EGameFlowState::TutorialCombat)
+	{
+		CompleteCombatTutorial();
+	}
+	if (State == EGameFlowState::RoundCombat)
+	{
+		// The round being fought becomes the last one before the unlock; winning it opens the build tutorial.
+		RoundsWon = FMath::Max(0, BuildUnlockAfterRounds - 1);
+		CurrentRound = RoundsWon + 1;
+		RefreshHud();
+		OnRoundStarted.Broadcast(CurrentRound); // Keeps the HUD and the music in sync with the jump.
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 4.f, FColor::Cyan,
+				FString::Printf(TEXT("Jumped to round %d: win it to open the build phase."), CurrentRound));
+		}
+	}
+}
+
 void AGameFlowManager::Debug_RestartRun()
 {
 	if (CanRunDebugAction())
@@ -439,6 +493,21 @@ void AGameFlowManager::Debug_ResetTutorials()
 	}
 }
 
+void AGameFlowManager::CreateHUD()
+{
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	if (!PC || !HUDWidgetClass || HUDWidget)
+	{
+		return;
+	}
+
+	HUDWidget = CreateWidget<UUserWidget>(PC, HUDWidgetClass);
+	if (HUDWidget)
+	{
+		HUDWidget->AddToViewport(0);
+	}
+}
+
 void AGameFlowManager::BindDebugInput()
 {
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
@@ -452,6 +521,7 @@ void AGameFlowManager::BindDebugInput()
 	DebugInput->BindKey(NextStepKey, IE_Pressed, this, &AGameFlowManager::Debug_NextStep);
 	DebugInput->BindKey(LoseRoundKey, IE_Pressed, this, &AGameFlowManager::Debug_LoseRound);
 	DebugInput->BindKey(RestartKey, IE_Pressed, this, &AGameFlowManager::Debug_RestartRun);
+	DebugInput->BindKey(JumpToUnlockKey, IE_Pressed, this, &AGameFlowManager::Debug_SkipToBuildUnlock);
 	PC->PushInputComponent(DebugInput);
 }
 
@@ -459,7 +529,7 @@ void AGameFlowManager::BindDebugInput()
 
 void AGameFlowManager::RefreshHud() const
 {
-	if (!GEngine)
+	if (!GEngine || !bShowDebugHud)
 	{
 		return;
 	}
@@ -492,8 +562,9 @@ void AGameFlowManager::RefreshHud() const
 	GEngine->AddOnScreenDebugMessage(HudKeyInstruction, HudDuration, FColor::Yellow, Instruction);
 
 	GEngine->AddOnScreenDebugMessage(HudKeyDebugHelp, HudDuration, FColor::Silver,
-		FString::Printf(TEXT("DEBUG: [%s] next step / win round   [%s] lose round   [%s] restart run"),
+		FString::Printf(TEXT("DEBUG: [%s] next step / win round   [%s] lose round   [%s] restart run   [%s] jump to build unlock"),
 			*NextStepKey.GetDisplayName().ToString(),
 			*LoseRoundKey.GetDisplayName().ToString(),
-			*RestartKey.GetDisplayName().ToString()));
+			*RestartKey.GetDisplayName().ToString(),
+			*JumpToUnlockKey.GetDisplayName().ToString()));
 }
