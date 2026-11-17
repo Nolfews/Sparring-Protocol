@@ -11,6 +11,7 @@ class UPlaceableDefinition;
 class UInputComponent;
 class AArenaSpawnPoint;
 class APawn;
+class UUserWidget;
 
 /** Where the run currently is. */
 UENUM(BlueprintType)
@@ -144,6 +145,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow")
 	bool bSkipTutorials = false;
 
+	/** The HUD created when the level starts (the Blueprint child of UGameHUDWidget). Leave empty for no HUD. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|UI")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+
+	/** The temporary on-screen debug lines of the flow (state, tutorial text, debug keys). Turn off once the HUD is in. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|UI")
+	bool bShowDebugHud = true;
+
 	/** The enemy places random elements from this list at each build phase (not during the tutorial). Empty = it does not build. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|Enemy")
 	TArray<TObjectPtr<UPlaceableDefinition>> EnemyDefinitions;
@@ -191,6 +200,7 @@ private:
 	AArenaSpawnPoint* FindSpawnPoint(EPlacementOwner PlacementOwner) const;
 	void BindDebugInput();
 	void RefreshHud() const;
+	void CreateHUD();
 	bool CanRunDebugAction() const;
 
 	UPROPERTY(VisibleAnywhere, Category = "GameFlow")
@@ -207,4 +217,7 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<APawn> SpawnedEnemy;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UUserWidget> HUDWidget;
 };

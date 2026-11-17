@@ -15,6 +15,9 @@ class UMaterialInterface;
 /** Fired whenever the validity of the previewed placement changes (for UI). */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlacementPreviewChanged, EPlacementFailReason, Reason);
 
+/** Fired when the selected element or its rotation changes (for the build HUD). */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlacementSelectionChanged, UPlaceableDefinition*, SelectedDefinition, int32, SelectedQuarterTurns);
+
 /**
  * Player side of the placement system. Add it to any actor (the ArenaManager for now,
  * the player pawn or controller later). It opens when the manager starts a build phase:
@@ -53,6 +56,14 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Placement")
 	bool IsPlacementActive() const { return bPlacementActive; }
+
+	/** The element currently selected for placement. */
+	UFUNCTION(BlueprintPure, Category = "Placement")
+	UPlaceableDefinition* GetSelectedDefinition() const { return GetCurrentDefinition(); }
+
+	/** Rotation of the selection in quarter turns (0 for an element that cannot rotate). */
+	UFUNCTION(BlueprintPure, Category = "Placement")
+	int32 GetSelectedQuarterTurns() const { return GetEffectiveTurns(GetCurrentDefinition()); }
 
 	/** Short human readable text for a refusal reason. */
 	UFUNCTION(BlueprintPure, Category = "Placement")
@@ -98,6 +109,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Placement|Events")
 	FOnPlacementPreviewChanged OnPreviewChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Placement|Events")
+	FOnPlacementSelectionChanged OnSelectionChanged;
 
 private:
 	UFUNCTION()
