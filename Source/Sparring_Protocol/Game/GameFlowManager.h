@@ -11,6 +11,7 @@ class UPlaceableDefinition;
 class UInputComponent;
 class AArenaSpawnPoint;
 class APawn;
+class UUserWidget;
 
 /** Where the run currently is. */
 UENUM(BlueprintType)
@@ -29,6 +30,7 @@ enum class EGameFlowState : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGameFlowStateChanged, EGameFlowState, NewState, EGameFlowState, PreviousState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRunStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBuildUnlocked);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStarted, int32, RoundNumber);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRoundEnded, int32, RoundNumber, bool, bPlayerWon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRunEnded, int32, RoundsWon);
@@ -106,6 +108,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
 	FOnRunStarted OnRunStarted;
 
+	/**
+	 * Fired once per run, at the moment the first build phase opens (after BuildUnlockAfterRounds rounds won).
+	 * The perfect hook for a big announcement: banner, music sting, lights, crowd reaction.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
+	FOnBuildUnlocked OnBuildUnlocked;
+
 	UPROPERTY(BlueprintAssignable, Category = "GameFlow|Events")
 	FOnRoundEnded OnRoundEnded;
 
@@ -128,6 +137,10 @@ public:
 	UFUNCTION(CallInEditor, Category = "Debug|Flow")
 	void Debug_RestartRun();
 
+	/** Skips the early rounds: the next round won opens the first build phase. */
+	UFUNCTION(CallInEditor, Category = "Debug|Flow")
+	void Debug_SkipToBuildUnlock();
+
 	/** Makes both tutorials play again on the next run. */
 	UFUNCTION(CallInEditor, Category = "Debug|Flow")
 	void Debug_ResetTutorials();
@@ -143,6 +156,28 @@ protected:
 	/** Dev override: never play the tutorials. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow")
 	bool bSkipTutorials = false;
+
+	/**
+	 * Combat rounds to win, with no building at all, before the first build phase (the build tutorial) opens.
+	 * After that, a build phase follows every round. 0 = build from the very start.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow", meta = (ClampMin = "0"))
+	int32 BuildUnlockAfterRounds = 10;
+
+	/**
+	 * True: the element quota starts from its minimum at the unlock and grows from there (3, 4, 5...).
+	 * False: it follows the total rounds won, so the first build phase already gives a large quota.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow")
+	bool bQuotaCountsFromUnlock = true;
+
+	/** The HUD created when the level starts (the Blueprint child of UGameHUDWidget). Leave empty for no HUD. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|UI")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+
+	/** The temporary on-screen debug lines of the flow (state, tutorial text, debug keys). Turn off once the HUD is in. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|UI")
+	bool bShowDebugHud = true;
 
 	/** The enemy places random elements from this list at each build phase (not during the tutorial). Empty = it does not build. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameFlow|Enemy")
@@ -169,6 +204,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug|Flow")
 	FKey RestartKey = EKeys::F9;
 
+	/** Debug: jumps to the last combat before the build unlock (the next win opens the build tutorial). */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug|Flow")
+	FKey JumpToUnlockKey = EKeys::PageDown;
+
 	/** Set once the tutorial was played. TODO: persist in a SaveGame. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GameFlow")
 	bool bCombatTutorialCompleted = false;
@@ -182,6 +221,7 @@ private:
 
 	void SetState(EGameFlowState NewState);
 	void BeginBuildStep();
+	void BeginNextStep();
 	void StartCombatRound();
 	void PlaceEnemyElements();
 	void SetupActorsForState();
@@ -191,6 +231,7 @@ private:
 	AArenaSpawnPoint* FindSpawnPoint(EPlacementOwner PlacementOwner) const;
 	void BindDebugInput();
 	void RefreshHud() const;
+	void CreateHUD();
 	bool CanRunDebugAction() const;
 
 	UPROPERTY(VisibleAnywhere, Category = "GameFlow")
@@ -207,4 +248,7 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<APawn> SpawnedEnemy;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UUserWidget> HUDWidget;
 };
