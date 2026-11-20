@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{79EF5854-2E52-44CB-B30F-1F0ECD111097}" SchemaVersion="133">
+	<SoundcasterSessions>
+		<WorkUnit Name="Default Work Unit" ID="{79EF5854-2E52-44CB-B30F-1F0ECD111097}" PersistMode="Standalone">
+			<ChildrenList>
+				<SoundcasterSession Name="MX_Test" ID="{76814921-9E63-44AE-8EC9-FDEB26CE14D8}">
+					<ModuleList>
+						<Module>
+							<ObjectRef Name="MX_AI_Level2" ID="{AE78E1E1-6D7F-4931-98E7-2BDB50E48A41}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="0" Y="0"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="MX_Reset_AI" ID="{F9AB844D-2442-40D0-B832-3D4BFF55185B}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="0" Y="1"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="MX_AI_Level3" ID="{50DD0347-706A-4BF3-A6D6-76F342B07488}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="1" Y="0"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="Play_MX_Combat" ID="{B58D7168-2F4E-4CE7-9980-9677B70ECDB6}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="1" Y="1"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="MX_AI_Level4" ID="{7568FCE4-BBA6-467B-B39C-7CA2387D0856}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="2" Y="0"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="Play_MX_Death" ID="{5143F39A-4148-4C8C-892C-3E65F13221D5}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="2" Y="1"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="MX_AI_Level5" ID="{E983E908-EDBF-4325-97A5-304937B57872}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="3" Y="0"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="Play_MX_Victory" ID="{46B65E36-E098-4F68-86EB-A8DEFEC45F82}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="3" Y="1"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="MX_AI_Level6" ID="{7ABC07F8-F236-4D00-AF96-771935A8C9F9}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="4" Y="0"/>
+						</Module>
+						<Module>
+							<ObjectRef Name="Stop_MX_Combat" ID="{85E72BFF-5EBE-4897-8385-105AF30A024E}" WorkUnitID="{C7898B73-8C63-49E5-A376-0B1CA104903B}"/>
+							<Position X="4" Y="1"/>
+						</Module>
+					</ModuleList>
+				</SoundcasterSession>
+			</ChildrenList>
+		</WorkUnit>
+	</SoundcasterSessions>
+</WwiseDocument>

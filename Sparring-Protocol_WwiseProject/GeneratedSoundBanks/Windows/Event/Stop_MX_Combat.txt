@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	3722796774	Stop_MX_Combat			\Default Work Unit\Stop_MX_Combat	
+

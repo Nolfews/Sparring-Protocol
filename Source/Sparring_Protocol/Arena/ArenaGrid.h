@@ -6,6 +6,8 @@
 /**
  * Plain 3D grid (no UObject, no actor dependency).
  * Cell (0,0,0) is the corner at Origin. Z is the height level.
+ * Two independent layers per cell: a state (what occupies it) and a
+ * "movement blocked" flag (what the path check uses).
  */
 class SPARRING_PROTOCOL_API FArenaGrid
 {
@@ -16,6 +18,10 @@ public:
 
 	EArenaCellState GetState(const FIntVector& Cell) const;
 	void SetState(const FIntVector& Cell, EArenaCellState NewState);
+
+	/** True if characters cannot walk through this cell. Out of bounds counts as blocked. */
+	bool IsMovementBlocked(const FIntVector& Cell) const;
+	void SetMovementBlocked(const FIntVector& Cell, bool bBlocked);
 
 	/** World location of the cell center. */
 	FVector CellToWorld(const FIntVector& Cell) const;
@@ -36,4 +42,5 @@ private:
 	float CellSize = 100.f;
 	FVector Origin = FVector::ZeroVector;
 	TArray<EArenaCellState> Cells;
+	TArray<uint8> MovementBlocked;
 };

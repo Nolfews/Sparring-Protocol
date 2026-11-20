@@ -35,6 +35,7 @@
 *.xcodeproj
 *.xcworkspace
 *.sln
+*.slnx
 *.suo
 *.opensdf
 *.sdf
@@ -48,7 +49,8 @@ SourceArt/**/*.tga
 
 # Binary Files
 Binaries/*
-Plugins/**/Binaries/*
+Plugins/**/Binaries/
+Plugins/**/Intermediate
 
 # Builds
 Build/*
@@ -73,3 +75,16 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+#Wwise
+*_WwiseProject/.cache/
+*_WwiseProject/*.prof
+*_WwiseProject/*.wsettings
+*_WwiseProject/*.validationcache
+*.pdb
+Plugins/WwiseSoundEngine/ThirdParty/
+Plugins/Wwise/*.chm
+Sparring-Protocol_WwiseProject/.cache/CacheVersion
+Sparring-Protocol_WwiseProject/Sparring-Protocol_WwiseProject.samue.validationcache
+Sparring_Protocol.slnx
+Automation_Sparring_Protocol.slnx

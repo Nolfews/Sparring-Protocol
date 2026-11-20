@@ -1,0 +1,3 @@
+Event	ID	Name			Wwise Object Path	Notes
+	2734057151	MX_Reset_AI			\Default Work Unit\MX_Reset_AI	
+
